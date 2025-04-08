@@ -49,7 +49,7 @@ namespace MatFileHandler
             get
             {
                 var rowAndColumn = GetRowAndColumn(list);
-                return DataDictionary.ContainsKey(rowAndColumn) ? DataDictionary[rowAndColumn] : default(T);
+                return DataDictionary.TryGetValue(rowAndColumn, out var result) ? result : default;
             }
             set => DataDictionary[GetRowAndColumn(list)] = value;
         }
@@ -61,7 +61,7 @@ namespace MatFileHandler
         public override double[] ConvertToDoubleArray()
         {
             var data = ((IArrayOf<T>)this).Data;
-            return data as double[] ?? data.Select(x => Convert.ToDouble(x)).ToArray();
+            return data as double[] ?? data.Select(x => Convert.ToDouble(x, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
         }
 
         /// <inheritdoc />
@@ -75,7 +75,7 @@ namespace MatFileHandler
             var result = new double[Dimensions[0], Dimensions[1]];
             foreach (var pair in Data)
             {
-                result[pair.Key.row, pair.Key.column] = Convert.ToDouble(pair.Value);
+                result[pair.Key.row, pair.Key.column] = Convert.ToDouble(pair.Value, System.Globalization.CultureInfo.InvariantCulture);
             }
 
             return result;

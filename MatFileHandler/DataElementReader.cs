@@ -212,7 +212,7 @@ namespace MatFileHandler
             }
         }
 
-        private DataElement ContinueReadingCellArray(
+        private MatCellArray ContinueReadingCellArray(
             BinaryReader reader,
             ArrayFlags flags,
             int[] dimensions,
@@ -258,11 +258,11 @@ namespace MatFileHandler
             }
             else
             {
-                return new Opaque(name, typeDescription, className, new int[] { }, data, subsystemData);
+                return new Opaque(name, typeDescription, className, Array.Empty<int>(), data, subsystemData);
             }
         }
 
-        private DataElement ContinueReadingSparseArray(
+        private MatArray ContinueReadingSparseArray(
             BinaryReader reader,
             DataElement firstElement,
             int[] dimensions,
@@ -313,7 +313,7 @@ namespace MatFileHandler
             }
         }
 
-        private DataElement ContinueReadingStructure(
+        private MatStructureArray ContinueReadingStructure(
             BinaryReader reader,
             ArrayFlags flags,
             int[] dimensions,

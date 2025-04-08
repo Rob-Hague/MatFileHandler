@@ -71,9 +71,9 @@ namespace MatFileHandler
             {
                 throw new NotSupportedException("Only 2-dimensional sparse arrays are supported");
             }
-            if (data == null)
+            if (data is null)
             {
-                throw new ArgumentException("Null data found.", "data");
+                throw new ArgumentException("Null data found.", nameof(data));
             }
             var elements =
                 ConvertDataToSparseProperType<T>(data, flags.ArrayFlags.Variable.HasFlag(Variable.IsLogical));

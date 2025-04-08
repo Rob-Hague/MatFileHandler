@@ -88,7 +88,7 @@ namespace MatFileHandler
             return ReadRawVariables(reader, subsystemDataOffset, subsystemData);
         }
 
-        private static IMatFile Read(BinaryReader reader)
+        private static MatFile Read(BinaryReader reader)
         {
             var header = ReadHeader(reader);
             var rawVariables = ReadRawVariables(reader, header.SubsystemDataOffset);

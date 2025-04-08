@@ -85,7 +85,7 @@ namespace MatFileHandler
                     return result!;
                 }
 
-                throw new IndexOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(list));
             }
             set => throw new NotImplementedException();
         }
@@ -97,7 +97,7 @@ namespace MatFileHandler
             set => throw new NotImplementedException();
         }
 
-        private IReadOnlyDictionary<string, IArray> ExtractObject(int i)
+        private OpaqueObjectArrayElement ExtractObject(int i)
         {
             return new OpaqueObjectArrayElement(this, i);
         }

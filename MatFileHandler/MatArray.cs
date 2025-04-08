@@ -51,7 +51,7 @@ namespace MatFileHandler
         /// <returns>Empty array.</returns>
         public static MatArray Empty()
         {
-            return new MatArray(new ArrayFlags { Class = ArrayType.MxCell, Variable = 0 }, new int[] { }, string.Empty);
+            return new MatArray(new ArrayFlags { Class = ArrayType.MxCell, Variable = 0 }, Array.Empty<int>(), string.Empty);
         }
 
         /// <inheritdoc />

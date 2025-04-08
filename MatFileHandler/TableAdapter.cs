@@ -89,7 +89,7 @@ namespace MatFileHandler
                     .FirstOrDefault();
                 if (!(maybeIndex is int index))
                 {
-                    throw new IndexOutOfRangeException($"Variable '{variableName}' not found.");
+                    throw new ArgumentOutOfRangeException(nameof(variableName), $"Variable '{variableName}' not found.");
                 }
 
                 var data = matObject["data"] as ICellArray

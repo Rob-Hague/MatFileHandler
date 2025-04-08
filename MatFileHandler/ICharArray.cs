@@ -10,6 +10,8 @@ namespace MatFileHandler
         /// <summary>
         /// Gets the contained string.
         /// </summary>
+#pragma warning disable CA1716, CA1720
         string String { get; }
+#pragma warning restore CA1716, CA1720
     }
 }
