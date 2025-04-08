@@ -389,6 +389,30 @@ namespace MatFileHandler.Tests
         }
 
         /// <summary>
+        /// Test reading a deeply nested table.
+        /// </summary>
+        [Theory, MemberData(nameof(TestDataFactories))]
+        public void TestDeepTable(AbstractTestDataFactory<IMatFile> testFactory)
+        {
+            var matFile = testFactory["table-deep"];
+            var obj = matFile["t"].Value as IMatObject;
+            var table = new TableAdapter(obj);
+            Assert.Equal(1, table.NumberOfRows);
+            Assert.Equal(2, table.NumberOfVariables);
+            Assert.Equal(new[] { "s", "another" }, table.VariableNames);
+            var s = table["s"] as IStructureArray;
+            Assert.Equal(new[] { "a", "b", "c" }, s.FieldNames);
+            var c = s["c", 0];
+            var internalTable = new TableAdapter(c);
+            Assert.Equal(2, internalTable.NumberOfRows);
+            Assert.Equal(2, internalTable.NumberOfVariables);
+            Assert.Equal(new[] { "x", "y" }, internalTable.VariableNames);
+            var y = new StringAdapter(internalTable["y"]);
+            Assert.Equal("3", y[0]);
+            Assert.Equal("abc", y[1]);
+        }
+
+        /// <summary>
         /// Test reading a table with strings
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
