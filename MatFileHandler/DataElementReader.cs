@@ -33,50 +33,23 @@ namespace MatFileHandler
         public DataElement Read(BinaryReader reader)
         {
             var (dataReader, tag) = ReadTag(reader);
-            DataElement result;
-            switch (tag.Type)
+
+            var result = tag.Type switch
             {
-                case DataType.MiInt8:
-                    result = ReadNum<sbyte>(tag, dataReader);
-                    break;
-                case DataType.MiUInt8:
-                case DataType.MiUtf8:
-                    result = ReadNum<byte>(tag, dataReader);
-                    break;
-                case DataType.MiInt16:
-                    result = ReadNum<short>(tag, dataReader);
-                    break;
-                case DataType.MiUInt16:
-                case DataType.MiUtf16:
-                    result = ReadNum<ushort>(tag, dataReader);
-                    break;
-                case DataType.MiInt32:
-                    result = ReadNum<int>(tag, dataReader);
-                    break;
-                case DataType.MiUInt32:
-                    result = ReadNum<uint>(tag, dataReader);
-                    break;
-                case DataType.MiSingle:
-                    result = ReadNum<float>(tag, dataReader);
-                    break;
-                case DataType.MiDouble:
-                    result = ReadNum<double>(tag, dataReader);
-                    break;
-                case DataType.MiInt64:
-                    result = ReadNum<long>(tag, dataReader);
-                    break;
-                case DataType.MiUInt64:
-                    result = ReadNum<ulong>(tag, dataReader);
-                    break;
-                case DataType.MiMatrix:
-                    result = ReadMatrix(tag, dataReader);
-                    break;
-                case DataType.MiCompressed:
-                    result = ReadCompressed(tag, dataReader);
-                    break;
-                default:
-                    throw new NotSupportedException("Unknown element.");
-            }
+                DataType.MiInt8 => ReadNum<sbyte>(tag, dataReader),
+                DataType.MiUInt8 or DataType.MiUtf8 => ReadNum<byte>(tag, dataReader),
+                DataType.MiInt16 => ReadNum<short>(tag, dataReader),
+                DataType.MiUInt16 or DataType.MiUtf16 => ReadNum<ushort>(tag, dataReader),
+                DataType.MiInt32 => ReadNum<int>(tag, dataReader),
+                DataType.MiUInt32 => ReadNum<uint>(tag, dataReader),
+                DataType.MiSingle => ReadNum<float>(tag, dataReader),
+                DataType.MiDouble => ReadNum<double>(tag, dataReader),
+                DataType.MiInt64 => ReadNum<long>(tag, dataReader),
+                DataType.MiUInt64 => ReadNum<ulong>(tag, dataReader),
+                DataType.MiMatrix => ReadMatrix(tag, dataReader),
+                DataType.MiCompressed => ReadCompressed(tag, dataReader),
+                _ => throw new NotSupportedException("Unknown element."),
+            };
 
             if (tag.Type != DataType.MiCompressed)
             {
@@ -122,7 +95,7 @@ namespace MatFileHandler
         private static ArrayFlags ReadArrayFlags(DataElement element)
         {
             var flagData = (element as MiNum<uint>)?.Data ??
-                           throw new HandlerException("Unexpected type in array flags.");
+                throw new HandlerException("Unexpected type in array flags.");
             var class_ = (ArrayType)(flagData[0] & 0xff);
             var variableFlags = (flagData[0] >> 8) & 0x0e;
             return new ArrayFlags
@@ -206,7 +179,7 @@ namespace MatFileHandler
             else
             {
                 var length = typeHi;
-                type = type & 0xffff;
+                type &= 0xffff;
                 var smallReader = new BinaryReader(new MemoryStream(reader.ReadBytes(4)));
                 return (smallReader, new Tag((DataType)type, length));
             }
@@ -298,19 +271,17 @@ namespace MatFileHandler
                     imaginaryData);
             }
 
-            switch (data)
+            return data switch
             {
-                case MiNum<double> _:
-                    return DataElementConverter.ConvertToMatSparseArrayOf<double>(
-                        sparseArrayFlags,
-                        dimensions,
-                        name,
-                        rowIndex.Data,
-                        columnIndex.Data,
-                        data);
-                default:
-                    throw new NotSupportedException("Only double and logical sparse arrays are supported.");
-            }
+                MiNum<double> => DataElementConverter.ConvertToMatSparseArrayOf<double>(
+                    sparseArrayFlags,
+                    dimensions,
+                    name,
+                    rowIndex.Data,
+                    columnIndex.Data,
+                    data),
+                _ => throw new NotSupportedException("Only double and logical sparse arrays are supported."),
+            };
         }
 
         private MatStructureArray ContinueReadingStructure(
@@ -421,26 +392,23 @@ namespace MatFileHandler
             switch (flags.Class)
             {
                 case ArrayType.MxChar:
-                    switch (data)
+                    return data switch
                     {
-                        case MiNum<byte> _:
-                            return DataElementConverter.ConvertToMatNumericalArrayOf<byte>(
-                                flags,
-                                dimensions,
-                                name,
-                                data,
-                                imaginaryData);
-                        case MiNum<ushort> _:
-                            return DataElementConverter.ConvertToMatNumericalArrayOf<ushort>(
-                                flags,
-                                dimensions,
-                                name,
-                                data,
-                                imaginaryData);
-                        default:
-                            throw new NotSupportedException(
-                                $"This type of char array ({data.GetType()}) is not supported.");
-                    }
+                        MiNum<byte> => DataElementConverter.ConvertToMatNumericalArrayOf<byte>(
+                            flags,
+                            dimensions,
+                            name,
+                            data,
+                            imaginaryData),
+                        MiNum<ushort> => DataElementConverter.ConvertToMatNumericalArrayOf<ushort>(
+                            flags,
+                            dimensions,
+                            name,
+                            data,
+                            imaginaryData),
+                        _ => throw new NotSupportedException(
+                            $"This type of char array ({data.GetType()}) is not supported."),
+                    };
                 case ArrayType.MxInt8:
                     return DataElementConverter.ConvertToMatNumericalArrayOf<sbyte>(
                         flags,

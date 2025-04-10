@@ -78,15 +78,7 @@ namespace MatFileHandler
         /// <inheritdoc />
         public IArray this[string field, params int[] list]
         {
-            get
-            {
-                if (TryGetValue(field, out var result, list))
-                {
-                    return result!;
-                }
-
-                throw new ArgumentOutOfRangeException(nameof(list));
-            }
+            get => TryGetValue(field, out var result, list) ? result! : throw new ArgumentOutOfRangeException(nameof(list));
             set => throw new NotImplementedException();
         }
 
@@ -106,7 +98,7 @@ namespace MatFileHandler
         {
             var index = Dimensions.DimFlatten(list);
             var maybeFieldIndex = SubsystemData.ClassInformation[ClassIndex].FindField(field);
-            if (!(maybeFieldIndex is int fieldIndex))
+            if (maybeFieldIndex is not int fieldIndex)
             {
                 output = default;
                 return false;
@@ -171,8 +163,8 @@ namespace MatFileHandler
                 }
             }
 
-            /// <inheritdoc />
 #pragma warning disable CS8767
+            /// <inheritdoc />
             public bool TryGetValue(string key, out IArray? value)
 #pragma warning restore CS8767
             {

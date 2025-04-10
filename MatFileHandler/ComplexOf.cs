@@ -8,7 +8,7 @@ namespace MatFileHandler
     /// A structure representing a complex number where real and imaginary parts are of type T.
     /// </summary>
     /// <typeparam name="T">Type of real and imaginary parts.</typeparam>
-    public struct ComplexOf<T> : IEquatable<ComplexOf<T>>
+    public readonly struct ComplexOf<T> : IEquatable<ComplexOf<T>>
         where T : struct
     {
         /// <summary>
@@ -71,10 +71,11 @@ namespace MatFileHandler
         /// <returns>True iff another object is a complex number equal to this.</returns>
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
+
             return obj is ComplexOf<T> other && Equals(other);
         }
 

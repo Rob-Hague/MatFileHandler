@@ -10,7 +10,6 @@ namespace MatFileHandler
     /// </summary>
     public class StringAdapter
     {
-        private readonly int[] dimensions;
         private readonly string[] strings;
 
         /// <summary>
@@ -28,13 +27,13 @@ namespace MatFileHandler
             var binaryData = matObject["any", 0] as IArrayOf<ulong>
                              ?? throw new HandlerException("Cannot extract string data.");
 
-            (dimensions, strings) = ParseBinaryData(binaryData.Data);
+            (Dimensions, strings) = ParseBinaryData(binaryData.Data);
         }
 
         /// <summary>
         /// Gets string array dimensions.
         /// </summary>
-        public int[] Dimensions => dimensions;
+        public int[] Dimensions { get; }
 
         /// <summary>
         /// Gets string object at given position.

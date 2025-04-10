@@ -48,7 +48,7 @@ internal sealed class PositionTrackingStream : Stream
     /// <inheritdoc/>
     public override int Read(byte[] buffer, int offset, int count)
     {
-        int bytesRead = _baseStream.Read(buffer, offset, count);
+        var bytesRead = _baseStream.Read(buffer, offset, count);
 
         _position += bytesRead;
 

@@ -222,12 +222,7 @@ namespace MatFileHandler
         private static int CalculatePadding(int length)
         {
             var rem = length % 8;
-            if (rem == 0)
-            {
-                return 0;
-            }
-
-            return 8 - rem;
+            return rem == 0 ? 0 : 8 - rem;
         }
 
         private void WriteDataElement(int dataLength)
@@ -293,7 +288,7 @@ namespace MatFileHandler
         private void WriteFieldNames(IEnumerable<string> fieldNames)
         {
             var fieldNamesArray = fieldNames.Select(name => Encoding.ASCII.GetBytes(name)).ToArray();
-            var maxFieldName = fieldNamesArray.Select(name => name.Length).Max() + 1;
+            var maxFieldName = fieldNamesArray.Max(name => name.Length) + 1;
             WriteDataElement(GetLengthOfByteArray<int>(1));
             var buffer = new byte[fieldNamesArray.Length * maxFieldName];
             var startPosition = 0;

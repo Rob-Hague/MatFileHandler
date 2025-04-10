@@ -1,6 +1,5 @@
 ﻿// Copyright 2017-2018 Alexander Luzgarev
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -28,10 +27,8 @@ namespace MatFileHandler
         /// <returns>Contents of the file.</returns>
         public IMatFile Read()
         {
-            using (var reader = new BinaryReader(new PositionTrackingStream(Stream)))
-            {
-                return Read(reader);
-            }
+            using var reader = new BinaryReader(new PositionTrackingStream(Stream));
+            return Read(reader);
         }
 
         /// <summary>
@@ -95,16 +92,14 @@ namespace MatFileHandler
             var variables = new List<IVariable>();
             foreach (var variable in rawVariables)
             {
-                var array = variable.DataElement as MatArray;
-                if (array is null)
+                if (variable.DataElement is MatArray array)
                 {
-                    continue;
+                    variables.Add(
+                        new MatVariable(
+                            array,
+                            array.Name,
+                            array.Flags.Variable.HasFlag(Variable.IsGlobal)));
                 }
-
-                variables.Add(new MatVariable(
-                    array,
-                    array.Name,
-                    array.Flags.Variable.HasFlag(Variable.IsGlobal)));
             }
 
             return new MatFile(variables);

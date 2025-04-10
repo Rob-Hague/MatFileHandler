@@ -87,7 +87,7 @@ namespace MatFileHandler
                     .Where(i => VariableNames[i] == variableName)
                     .Select(i => (int?)i)
                     .FirstOrDefault();
-                if (!(maybeIndex is int index))
+                if (maybeIndex is not int index)
                 {
                     throw new ArgumentOutOfRangeException(nameof(variableName), $"Variable '{variableName}' not found.");
                 }

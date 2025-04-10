@@ -10,7 +10,7 @@ namespace MatFileHandler
         /// <summary>
         /// Gets default options.
         /// </summary>
-        public static MatFileWriterOptions Default => new MatFileWriterOptions
+        public static MatFileWriterOptions Default => new()
         {
             UseCompression = CompressionUsage.Always,
         };

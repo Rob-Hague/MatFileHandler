@@ -16,31 +16,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to Double.</returns>
         public static double[] GetDataAsDouble(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToDouble(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToDouble(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToDouble(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToDouble(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToDouble(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToDouble(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToDouble(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToDouble(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return FloatToDouble(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return doubleElement.Data;
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to double, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToDouble(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToDouble(byteElement.Data),
+                MiNum<int> intElement => IntToDouble(intElement.Data),
+                MiNum<uint> uintElement => UintToDouble(uintElement.Data),
+                MiNum<short> shortElement => ShortToDouble(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToDouble(ushortElement.Data),
+                MiNum<long> longElement => LongToDouble(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToDouble(ulongElement.Data),
+                MiNum<float> floatElement => FloatToDouble(floatElement.Data),
+                MiNum<double> doubleElement => doubleElement.Data,
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to double, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -50,31 +40,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to Single.</returns>
         public static float[] GetDataAsSingle(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToSingle(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToSingle(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToSingle(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToSingle(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToSingle(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToSingle(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToSingle(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToSingle(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return floatElement.Data;
-                case MiNum<double> doubleElement:
-                    return DoubleToSingle(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to float, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToSingle(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToSingle(byteElement.Data),
+                MiNum<int> intElement => IntToSingle(intElement.Data),
+                MiNum<uint> uintElement => UintToSingle(uintElement.Data),
+                MiNum<short> shortElement => ShortToSingle(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToSingle(ushortElement.Data),
+                MiNum<long> longElement => LongToSingle(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToSingle(ulongElement.Data),
+                MiNum<float> floatElement => floatElement.Data,
+                MiNum<double> doubleElement => DoubleToSingle(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to float, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -84,31 +64,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to Int8.</returns>
         public static sbyte[] GetDataAsInt8(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return sbyteElement.Data;
-                case MiNum<byte> byteElement:
-                    return ByteToSByte(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToSByte(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToSByte(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToSByte(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToSByte(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToSByte(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToSByte(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return SingleToSByte(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToSByte(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to int8, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => sbyteElement.Data,
+                MiNum<byte> byteElement => ByteToSByte(byteElement.Data),
+                MiNum<int> intElement => IntToSByte(intElement.Data),
+                MiNum<uint> uintElement => UintToSByte(uintElement.Data),
+                MiNum<short> shortElement => ShortToSByte(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToSByte(ushortElement.Data),
+                MiNum<long> longElement => LongToSByte(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToSByte(ulongElement.Data),
+                MiNum<float> floatElement => SingleToSByte(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToSByte(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to int8, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -118,31 +88,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to UInt8.</returns>
         public static byte[] GetDataAsUInt8(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToByte(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return byteElement.Data;
-                case MiNum<int> intElement:
-                    return IntToByte(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToByte(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToByte(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToByte(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToByte(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToByte(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return SingleToByte(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToByte(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to uint8, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToByte(sbyteElement.Data),
+                MiNum<byte> byteElement => byteElement.Data,
+                MiNum<int> intElement => IntToByte(intElement.Data),
+                MiNum<uint> uintElement => UintToByte(uintElement.Data),
+                MiNum<short> shortElement => ShortToByte(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToByte(ushortElement.Data),
+                MiNum<long> longElement => LongToByte(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToByte(ulongElement.Data),
+                MiNum<float> floatElement => SingleToByte(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToByte(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to uint8, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -152,31 +112,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to Int16.</returns>
         public static short[] GetDataAsInt16(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToInt16(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToInt16(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToInt16(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToInt16(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return shortElement.Data;
-                case MiNum<ushort> ushortElement:
-                    return UshortToInt16(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToInt16(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToInt16(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return SingleToInt16(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToInt16(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to int16, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToInt16(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToInt16(byteElement.Data),
+                MiNum<int> intElement => IntToInt16(intElement.Data),
+                MiNum<uint> uintElement => UintToInt16(uintElement.Data),
+                MiNum<short> shortElement => shortElement.Data,
+                MiNum<ushort> ushortElement => UshortToInt16(ushortElement.Data),
+                MiNum<long> longElement => LongToInt16(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToInt16(ulongElement.Data),
+                MiNum<float> floatElement => SingleToInt16(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToInt16(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to int16, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -186,31 +136,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to UInt16.</returns>
         public static ushort[] GetDataAsUInt16(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToUInt16(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToUInt16(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToUInt16(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToUInt16(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToUInt16(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return ushortElement.Data;
-                case MiNum<long> longElement:
-                    return LongToUInt16(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToUInt16(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return SingleToUInt16(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToUInt16(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to uint16, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToUInt16(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToUInt16(byteElement.Data),
+                MiNum<int> intElement => IntToUInt16(intElement.Data),
+                MiNum<uint> uintElement => UintToUInt16(uintElement.Data),
+                MiNum<short> shortElement => ShortToUInt16(shortElement.Data),
+                MiNum<ushort> ushortElement => ushortElement.Data,
+                MiNum<long> longElement => LongToUInt16(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToUInt16(ulongElement.Data),
+                MiNum<float> floatElement => SingleToUInt16(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToUInt16(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to uint16, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -220,31 +160,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to Int32.</returns>
         public static int[] GetDataAsInt32(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToInt32(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToInt32(byteElement.Data);
-                case MiNum<int> intElement:
-                    return intElement.Data;
-                case MiNum<uint> uintElement:
-                    return UintToInt32(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToInt32(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToInt32(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToInt32(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToInt32(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return SingleToInt32(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToInt32(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to int32, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToInt32(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToInt32(byteElement.Data),
+                MiNum<int> intElement => intElement.Data,
+                MiNum<uint> uintElement => UintToInt32(uintElement.Data),
+                MiNum<short> shortElement => ShortToInt32(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToInt32(ushortElement.Data),
+                MiNum<long> longElement => LongToInt32(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToInt32(ulongElement.Data),
+                MiNum<float> floatElement => SingleToInt32(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToInt32(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to int32, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -254,31 +184,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to UInt32.</returns>
         public static uint[] GetDataAsUInt32(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToUInt32(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToUInt32(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToUInt32(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return uintElement.Data;
-                case MiNum<short> shortElement:
-                    return ShortToUInt32(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToUInt32(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToUInt32(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return UlongToUInt32(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return SingleToUInt32(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToUInt32(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to uint32, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToUInt32(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToUInt32(byteElement.Data),
+                MiNum<int> intElement => IntToUInt32(intElement.Data),
+                MiNum<uint> uintElement => uintElement.Data,
+                MiNum<short> shortElement => ShortToUInt32(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToUInt32(ushortElement.Data),
+                MiNum<long> longElement => LongToUInt32(longElement.Data),
+                MiNum<ulong> ulongElement => UlongToUInt32(ulongElement.Data),
+                MiNum<float> floatElement => SingleToUInt32(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToUInt32(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to uint32, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -288,31 +208,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to Int64.</returns>
         public static long[] GetDataAsInt64(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToInt64(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToInt64(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToInt64(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToInt64(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToInt64(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToInt64(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return longElement.Data;
-                case MiNum<ulong> ulongElement:
-                    return UlongToInt64(ulongElement.Data);
-                case MiNum<float> floatElement:
-                    return SingleToInt64(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToInt64(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to int64, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToInt64(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToInt64(byteElement.Data),
+                MiNum<int> intElement => IntToInt64(intElement.Data),
+                MiNum<uint> uintElement => UintToInt64(uintElement.Data),
+                MiNum<short> shortElement => ShortToInt64(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToInt64(ushortElement.Data),
+                MiNum<long> longElement => longElement.Data,
+                MiNum<ulong> ulongElement => UlongToInt64(ulongElement.Data),
+                MiNum<float> floatElement => SingleToInt64(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToInt64(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to int64, found {element.GetType()}."),
+            };
         }
 
         /// <summary>
@@ -322,31 +232,21 @@ namespace MatFileHandler
         /// <returns>Contents of the elements, converted to UInt64.</returns>
         public static ulong[] GetDataAsUInt64(DataElement element)
         {
-            switch (element)
+            return element switch
             {
-                case MiNum<sbyte> sbyteElement:
-                    return SbyteToUInt64(sbyteElement.Data);
-                case MiNum<byte> byteElement:
-                    return ByteToUInt64(byteElement.Data);
-                case MiNum<int> intElement:
-                    return IntToUInt64(intElement.Data);
-                case MiNum<uint> uintElement:
-                    return UintToUInt64(uintElement.Data);
-                case MiNum<short> shortElement:
-                    return ShortToUInt64(shortElement.Data);
-                case MiNum<ushort> ushortElement:
-                    return UshortToUInt64(ushortElement.Data);
-                case MiNum<long> longElement:
-                    return LongToUInt64(longElement.Data);
-                case MiNum<ulong> ulongElement:
-                    return ulongElement.Data;
-                case MiNum<float> floatElement:
-                    return SingleToUInt64(floatElement.Data);
-                case MiNum<double> doubleElement:
-                    return DoubleToUInt64(doubleElement.Data);
-            }
-            throw new HandlerException(
-                $"Expected data element that would be convertible to uint64, found {element.GetType()}.");
+                MiNum<sbyte> sbyteElement => SbyteToUInt64(sbyteElement.Data),
+                MiNum<byte> byteElement => ByteToUInt64(byteElement.Data),
+                MiNum<int> intElement => IntToUInt64(intElement.Data),
+                MiNum<uint> uintElement => UintToUInt64(uintElement.Data),
+                MiNum<short> shortElement => ShortToUInt64(shortElement.Data),
+                MiNum<ushort> ushortElement => UshortToUInt64(ushortElement.Data),
+                MiNum<long> longElement => LongToUInt64(longElement.Data),
+                MiNum<ulong> ulongElement => ulongElement.Data,
+                MiNum<float> floatElement => SingleToUInt64(floatElement.Data),
+                MiNum<double> doubleElement => DoubleToUInt64(doubleElement.Data),
+                _ => throw new HandlerException(
+                    $"Expected data element that would be convertible to uint64, found {element.GetType()}."),
+            };
         }
 
         // * to double

@@ -7,7 +7,7 @@ namespace MatFileHandler.Tests
     /// <summary>
     /// A filename convention based on file extensions.
     /// </summary>
-    internal class ExtensionTestFilenameConvention : ITestFilenameConvention
+    internal sealed class ExtensionTestFilenameConvention : ITestFilenameConvention
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtensionTestFilenameConvention"/> class.

@@ -93,15 +93,12 @@ namespace MatFileHandler
 
         private (int row, int column) GetRowAndColumn(int[] indices)
         {
-            switch (indices.Length)
+            return indices.Length switch
             {
-                case 1:
-                    return (indices[0] % Dimensions[0], indices[0] / Dimensions[0]);
-                case 2:
-                    return (indices[0], indices[1]);
-                default:
-                    throw new NotSupportedException("Invalid index for sparse array.");
-            }
+                1 => (indices[0] % Dimensions[0], indices[0] / Dimensions[0]),
+                2 => (indices[0], indices[1]),
+                _ => throw new NotSupportedException("Invalid index for sparse array."),
+            };
         }
     }
 }

@@ -590,7 +590,7 @@ namespace MatFileHandler.Tests
         /// Test four-dimensional arrays.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void Test_4DArrays(AbstractTestDataFactory<IMatFile> testFactory)
+        public void Test4DArrays(AbstractTestDataFactory<IMatFile> testFactory)
         {
             var matFile = testFactory["issue20.mat"];
             var obj = matFile["a4d"].Value;

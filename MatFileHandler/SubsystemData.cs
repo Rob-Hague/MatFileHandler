@@ -119,12 +119,7 @@ namespace MatFileHandler
             /// <returns>Field index.</returns>
             public int? FindField(string fieldName)
             {
-                if (fieldToIndex.TryGetValue(fieldName, out var index))
-                {
-                    return index;
-                }
-
-                return null;
+                return fieldToIndex.TryGetValue(fieldName, out var index) ? index : null;
             }
         }
 

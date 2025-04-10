@@ -75,12 +75,17 @@ namespace MatFileHandler
             {
                 throw new ArgumentException("Null data found.", nameof(data));
             }
-            var elements =
+
+
+
+
+            var maybeElements =
                 ConvertDataToSparseProperType<T>(data, flags.ArrayFlags.Variable.HasFlag(Variable.IsLogical));
-            if (elements == null)
+            if (maybeElements is not { } elements)
             {
                 throw new HandlerException("Couldn't read sparse array.");
             }
+
             var dataDictionary =
                 ConvertMatlabSparseToDictionary(rowIndex, columnIndex, j => elements[j]);
             return new MatSparseArrayOf<T>(flags, dimensions, name, dataDictionary);
@@ -117,15 +122,12 @@ namespace MatFileHandler
             switch (flags.Class)
             {
                 case ArrayType.MxChar:
-                    switch (realData)
+                    return realData switch
                     {
-                        case MiNum<byte> dataByte:
-                            return ConvertToMatCharArray(flags, dimensions, name, dataByte);
-                        case MiNum<ushort> dataUshort:
-                            return ConvertToMatCharArray(flags, dimensions, name, dataUshort);
-                        default:
-                            throw new NotSupportedException("Only utf8, utf16 or ushort char arrays are supported.");
-                    }
+                        MiNum<byte> dataByte => ConvertToMatCharArray(flags, dimensions, name, dataByte),
+                        MiNum<ushort> dataUshort => ConvertToMatCharArray(flags, dimensions, name, dataUshort),
+                        _ => throw new NotSupportedException("Only utf8, utf16 or ushort char arrays are supported."),
+                    };
                 case ArrayType.MxDouble:
                 case ArrayType.MxSingle:
                 case ArrayType.MxInt8:
@@ -184,13 +186,12 @@ namespace MatFileHandler
             {
                 return DataExtraction.GetDataAsUInt8(data).Select(x => x != 0).ToArray() as T[];
             }
-            switch (data)
+
+            return data switch
             {
-                case MiNum<double> _:
-                    return DataExtraction.GetDataAsDouble(data) as T[];
-                default:
-                    throw new NotSupportedException();
-            }
+                MiNum<double> => DataExtraction.GetDataAsDouble(data) as T[],
+                _ => throw new NotSupportedException(),
+            };
         }
 
         private static MatCharArrayOf<ushort> ConvertToMatCharArray(
