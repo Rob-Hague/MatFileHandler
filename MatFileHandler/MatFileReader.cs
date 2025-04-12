@@ -48,25 +48,23 @@ namespace MatFileHandler
             var dataElementReader = new DataElementReader(subsystemData);
             while (true)
             {
-                try
-                {
-                    var position = reader.BaseStream.Position;
-                    var dataElement = dataElementReader.Read(reader);
-                    if (position == subsystemDataOffset)
-                    {
-                        var subsystemDataElement = dataElement as IArrayOf<byte>
-                            ?? throw new HandlerException("Cannot parse subsystem data element.");
-                        var newSubsystemData = ReadSubsystemData(subsystemDataElement.Data, subsystemData);
-                        subsystemData.Set(newSubsystemData);
-                    }
-                    else
-                    {
-                        variables.Add(new RawVariable(position, dataElement));
-                    }
-                }
-                catch (EndOfStreamException)
+                var position = reader.BaseStream.Position;
+                var dataElement = dataElementReader.Read(reader);
+                if (dataElement is null)
                 {
                     break;
+                }
+
+                if (position == subsystemDataOffset)
+                {
+                    var subsystemDataElement = dataElement as IArrayOf<byte>
+                        ?? throw new HandlerException("Cannot parse subsystem data element.");
+                    var newSubsystemData = ReadSubsystemData(subsystemDataElement.Data, subsystemData);
+                    subsystemData.Set(newSubsystemData);
+                }
+                else
+                {
+                    variables.Add(new RawVariable(position, dataElement));
                 }
             }
 

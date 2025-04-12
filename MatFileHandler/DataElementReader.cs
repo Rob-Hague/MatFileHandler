@@ -30,9 +30,15 @@ namespace MatFileHandler
         /// </summary>
         /// <param name="reader">Input reader.</param>
         /// <returns>Data element.</returns>
-        public DataElement Read(BinaryReader reader)
+        public DataElement? Read(BinaryReader reader)
         {
-            var (dataReader, tag) = ReadTag(reader);
+            var maybeTagPair = ReadTag(reader);
+            if (maybeTagPair is not { } tagPair)
+            {
+                return null;
+            }
+
+            var (dataReader, tag) = tagPair;
 
             var result = tag.Type switch
             {
@@ -167,9 +173,31 @@ namespace MatFileHandler
             };
         }
 
-        private static (BinaryReader reader, Tag tag) ReadTag(BinaryReader reader)
+        private static int? TryReadInt32(BinaryReader reader)
         {
-            var type = reader.ReadInt32();
+            var buffer = new byte[4];
+            var position = 0;
+            while (position < 4)
+            {
+                var actually = reader.BaseStream.Read(buffer, position, 4 - position);
+                if (actually == 0)
+                {
+                    return null;
+                }
+                position += actually;
+            }
+
+            return BitConverter.ToInt32(buffer, 0);
+        }
+
+        private static (BinaryReader reader, Tag tag)? ReadTag(BinaryReader reader)
+        {
+            var maybeType = TryReadInt32(reader);
+            if (maybeType is not int type)
+            {
+                return null;
+            }
+
             var typeHi = type >> 16;
             if (typeHi == 0)
             {
@@ -214,7 +242,7 @@ namespace MatFileHandler
             var classNameElement = Read(reader) as MiNum<sbyte> ??
                                    throw new HandlerException("Unexpected type in class name.");
             var className = ReadName(classNameElement);
-            var dataElement = Read(reader);
+            var dataElement = Read(reader) ?? throw new HandlerException("Missing opaque data element.");
             var data = ReadData(dataElement);
             if (data is MatNumericalArrayOf<uint> linkElement)
             {
@@ -246,7 +274,7 @@ namespace MatFileHandler
                            throw new HandlerException("Unexpected type in row indices of a sparse array.");
             var columnIndex = Read(reader) as MiNum<int> ??
                               throw new HandlerException("Unexpected type in column indices of a sparse array.");
-            var data = Read(reader);
+            var data = Read(reader) ?? throw new HandlerException("Missing sparse array data.");
             if (sparseArrayFlags.ArrayFlags.Variable.HasFlag(Variable.IsLogical))
             {
                 return DataElementConverter.ConvertToMatSparseArrayOf<bool>(
@@ -260,7 +288,7 @@ namespace MatFileHandler
 
             if (sparseArrayFlags.ArrayFlags.Variable.HasFlag(Variable.IsComplex))
             {
-                var imaginaryData = Read(reader);
+                var imaginaryData = Read(reader) ?? throw new HandlerException("Missing imaginary part of sparse array data.");
                 return DataElementConverter.ConvertToMatSparseArrayOfComplex(
                     sparseArrayFlags,
                     dimensions,
@@ -327,7 +355,7 @@ namespace MatFileHandler
                 using (var positionTrackingStream = new PositionTrackingStream(bufferedStream))
                 using (var innerReader = new BinaryReader(positionTrackingStream))
                 {
-                    element = Read(innerReader);
+                    element = Read(innerReader) ?? throw new HandlerException("Missing compressed data.");
                 }
 
                 if (substream.Position != substream.Length)
@@ -350,7 +378,7 @@ namespace MatFileHandler
                 return MatArray.Empty();
             }
 
-            var element1 = Read(reader);
+            var element1 = Read(reader) ?? throw new HandlerException("Missing matrix data.");
             var flags = ReadArrayFlags(element1);
             if (flags.Class == ArrayType.MxOpaque)
             {
@@ -372,12 +400,12 @@ namespace MatFileHandler
                 return ContinueReadingSparseArray(reader, element1, dimensions, name);
             }
 
-            var element4 = Read(reader);
+            var element4 = Read(reader) ?? throw new HandlerException("Missing matrix data.");
             var data = ReadData(element4);
             DataElement? imaginaryData = null;
             if (flags.Variable.HasFlag(Variable.IsComplex))
             {
-                var element5 = Read(reader);
+                var element5 = Read(reader) ?? throw new HandlerException("Missing complex matrix data.");
                 imaginaryData = ReadData(element5);
             }
 
