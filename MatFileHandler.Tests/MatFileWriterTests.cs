@@ -247,10 +247,7 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private static AbstractTestDataFactory<IMatFile> GetMatTestData(string factoryName) =>
-            new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
-
-        private void CompareSparseArrays<T>(ISparseArrayOf<T> expected, ISparseArrayOf<T> actual)
+        private static void CompareSparseArrays<T>(ISparseArrayOf<T> expected, ISparseArrayOf<T> actual)
           where T : struct
         {
             Assert.NotNull(actual);
@@ -258,7 +255,7 @@ namespace MatFileHandler.Tests
             Assert.Equal(expected.Data, actual.Data);
         }
 
-        private void CompareStructureArrays(IStructureArray expected, IStructureArray actual)
+        private static void CompareStructureArrays(IStructureArray expected, IStructureArray actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
@@ -272,7 +269,7 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private void CompareCellArrays(ICellArray expected, ICellArray actual)
+        private static void CompareCellArrays(ICellArray expected, ICellArray actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
@@ -282,21 +279,21 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private void CompareNumericalArrays<T>(IArrayOf<T> expected, IArrayOf<T> actual)
+        private static void CompareNumericalArrays<T>(IArrayOf<T> expected, IArrayOf<T> actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
             Assert.Equal(expected.Data, actual.Data);
         }
 
-        private void CompareCharArrays(ICharArray expected, ICharArray actual)
+        private static void CompareCharArrays(ICharArray expected, ICharArray actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
             Assert.Equal(expected.String, actual.String);
         }
 
-        private void CompareMatArrays(IArray expected, IArray actual)
+        private static void CompareMatArrays(IArray expected, IArray actual)
         {
             switch (expected)
             {
@@ -387,7 +384,7 @@ namespace MatFileHandler.Tests
             throw new NotSupportedException();
         }
 
-        private void CompareMatFiles(IMatFile expected, IMatFile actual)
+        private static void CompareMatFiles(IMatFile expected, IMatFile actual)
         {
             Assert.Equal(expected.Variables.Length, actual.Variables.Length);
             for (var i = 0; i < expected.Variables.Length; i++)
@@ -400,14 +397,17 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private void MatCompareWithTestData(
+        private static void MatCompareWithTestData(
             string factoryName,
             string testName,
             IMatFile actual,
             MatFileWritingMethod method,
             MatFileWriterOptionsForTests options)
         {
-            var expected = GetMatTestData(factoryName)[testName];
+            var fullFileName = Path.Combine("test-data", "good", $"{testName}.mat");
+            var expected = MatFileReadingMethods.ReadMatFile(
+                MatFileReadingMethod.NormalStream,
+                fullFileName);
             var buffer = MatFileWritingMethods.WriteMatFile(method, options, actual);
             using var stream = new MemoryStream(buffer);
             var reader = new MatFileReader(stream);
@@ -415,7 +415,7 @@ namespace MatFileHandler.Tests
             CompareMatFiles(expected, actualRead);
         }
 
-        private ComplexOf<T>[] CreateComplexLimits<T>(T[] limits)
+        private static ComplexOf<T>[] CreateComplexLimits<T>(T[] limits)
             where T : struct
         {
             return new[] { new ComplexOf<T>(limits[0], limits[1]), new ComplexOf<T>(limits[1], limits[0]) };

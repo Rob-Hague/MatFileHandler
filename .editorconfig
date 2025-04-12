@@ -18,6 +18,8 @@ dotnet_analyzer_diagnostic.category-Usage.severity = warning
 
 dotnet_diagnostic.IDE0010.severity = none
 dotnet_diagnostic.IDE0072.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1861.severity = none
 
 #### Core EditorConfig Options ####
 

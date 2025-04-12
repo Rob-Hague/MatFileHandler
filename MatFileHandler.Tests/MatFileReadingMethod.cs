@@ -3,9 +3,9 @@
 namespace MatFileHandler.Tests;
 
 /// <summary>
-/// Method of writing .mat files for testing.
+/// Method of reading .mat files for testing.
 /// </summary>
-public enum MatFileWritingMethod
+public enum MatFileReadingMethod
 {
     /// <summary>
     /// Undefined.
@@ -14,13 +14,13 @@ public enum MatFileWritingMethod
 
     /// <summary>
     /// Normal stream (like memory or file stream).
-    /// </summary>        
+    /// </summary>
     NormalStream,
 
     /// <summary>
-    /// A stream that cannot be seeked (like a deflate stream).
+    /// Partial stream (only is capable of reading one byte at a time).
     /// </summary>
-    UnseekableStream,
+    PartialStream,
 
     /// <summary>
     /// Unaligned stream (what happens if the data don't start at the beginning?).

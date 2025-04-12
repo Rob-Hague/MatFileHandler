@@ -17,50 +17,48 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing various things.
         /// </summary>
-        /// <param name="action"></param>
+        /// <param name="bytes">Bytes to write.</param>
         [Theory]
         [MemberData(nameof(TestData))]
-        public void Test(Action<Stream> action)
+        public void Test(byte[] bytes)
         {
             using var stream = new MemoryStream();
             var sut = new ChecksumCalculatingStream(stream);
-            action(sut);
+            sut.Write(bytes, 0, bytes.Length);
             var actual = sut.GetCrc();
-            var expected = ReferenceCalculation(action);
+
+            var expected = ReferenceCalculation(bytes);
         }
 
         /// <summary>
         /// Test data for <see cref="Test"/>.
         /// </summary>
         /// <returns>Test data.</returns>
-        public static IEnumerable<object[]> TestData()
+        public static TheoryData<byte[]> TestData()
         {
-            foreach (var data in TestData_Typed())
+            var empty = new byte[1234];
+            var nonEmpty = new byte[12345];
+            for (var i = 0; i < 1234; i++)
             {
-                yield return new object[] { data };
+                nonEmpty[i] = (byte)((i * i) % 256);
             }
-        }
-
-        private static IEnumerable<Action<Stream>> TestData_Typed()
-        {
-            yield return BinaryWriterAction(w => w.Write(true));
-            yield return BinaryWriterAction(w => w.Write(false));
-            yield return BinaryWriterAction(w => w.Write(byte.MinValue));
-            yield return BinaryWriterAction(w => w.Write(byte.MaxValue));
-            yield return BinaryWriterAction(w => w.Write(short.MinValue));
-            yield return BinaryWriterAction(w => w.Write(short.MaxValue));
-            yield return BinaryWriterAction(w => w.Write(int.MinValue));
-            yield return BinaryWriterAction(w => w.Write(int.MaxValue));
-            yield return BinaryWriterAction(w => w.Write(long.MinValue));
-            yield return BinaryWriterAction(w => w.Write(long.MaxValue));
-            yield return BinaryWriterAction(w => w.Write(decimal.MinValue));
-            yield return BinaryWriterAction(w => w.Write(decimal.MaxValue));
-            yield return BinaryWriterAction(w => w.Write(double.MinValue));
-            yield return BinaryWriterAction(w => w.Write(double.MaxValue));
-            yield return BinaryWriterAction(w => w.Write(double.PositiveInfinity));
-            yield return BinaryWriterAction(w => w.Write(double.NaN));
-            yield return BinaryWriterAction(w => w.Write(new byte[] { 1, 2, 3, 4, 5, 6, 7 }));
-            yield return BinaryWriterAction(w => w.Write(Enumerable.Range(0, 255).SelectMany(x => Enumerable.Range(0, 255)).Select(x => (byte)x).ToArray()));
+            return new TheoryData<byte[]>()
+            {
+                new byte[] { 0x00 },
+                new byte[] { 0x01 },
+                new byte[] { 0xff },
+                new byte[] { 0xff, 0xff },
+                new byte[] { 0xff, 0xff, 0xff },
+                new byte[] { 0xff, 0xff, 0xff, 0xff },
+                new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff },
+                new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                new byte[] { 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                new byte[] { 0x02, 0x03, 0x05, 0x07, 0x0b, 0x0d, 0x11, 0x13, 0x17, 0x1d },
+                empty,
+                nonEmpty,
+            };
         }
 
         private static Action<Stream> BinaryWriterAction(Action<BinaryWriter> action)
@@ -72,15 +70,15 @@ namespace MatFileHandler.Tests
             };
         }
 
-        private uint ReferenceCalculation(Action<Stream> action)
+        private static uint ReferenceCalculation(byte[] bytes)
         {
             using var stream = new MemoryStream();
-            action(stream);
+            stream.Write(bytes, 0, bytes.Length);
             stream.Position = 0;
             return CalculateAdler32Checksum(stream);
         }
 
-        private static uint CalculateAdler32Checksum(Stream stream)
+        private static uint CalculateAdler32Checksum(MemoryStream stream)
         {
             uint s1 = 1;
             uint s2 = 0;
