@@ -1,6 +1,4 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
-namespace MatFileHandler.Tests;
+﻿namespace MatFileHandler.Tests;
 
 /// <summary>
 /// Method of writing .mat files for testing.

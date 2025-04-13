@@ -1,6 +1,4 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;

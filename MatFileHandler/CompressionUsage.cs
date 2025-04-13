@@ -1,6 +1,4 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
-namespace MatFileHandler
+﻿namespace MatFileHandler
 {
     /// <summary>
     /// Describes compression usage strategy for writing files.

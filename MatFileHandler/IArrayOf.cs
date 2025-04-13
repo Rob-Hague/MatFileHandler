@@ -1,6 +1,4 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
-namespace MatFileHandler
+﻿namespace MatFileHandler
 {
     /// <summary>
     /// An interface providing access to array's contents.

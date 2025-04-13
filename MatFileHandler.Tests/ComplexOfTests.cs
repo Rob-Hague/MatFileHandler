@@ -1,6 +1,4 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
-using Xunit;
+﻿using Xunit;
 
 namespace MatFileHandler.Tests
 {
