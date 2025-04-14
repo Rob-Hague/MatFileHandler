@@ -15,7 +15,7 @@ You can find (partial) technical description of MATLAB object data format
 This document briefly describes how to perform simple operations with .mat files
 using MatFileHandler.
 
-If you have questions and/or ideas, you can [file a new issue](https://github.com/mahalex/MatFileHandler/issues/new)
+If you have questions and/or ideas, you can [file a new issue](https://git.mahalex.net/mahalex/MatFileHandler/issues/new)
 or contact me directly at <mahalex@gmail.com>.
 
 ## Changelog

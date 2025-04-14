@@ -8,11 +8,11 @@
     <Description>MatFileHandler provides a simple interface for reading and writing MATLAB .mat files (of so-called "Level 5") and extracting the contents of numerical arrays, logical arrays, sparse arrays, char arrays, cell arrays and structure arrays.</Description>
     <Copyright>Copyright 2017-2020 Alexander Luzgarev</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/mahalex/MatFileHandler</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/mahalex/MatFileHandler/releases/tag/v$(PackageVersion)</PackageReleaseNotes>
+    <PackageProjectUrl>https://git.mahalex.net/mahalex/MatFileHandler</PackageProjectUrl>
+    <PackageReleaseNotes>https://git.mahalex.net/mahalex/MatFileHandler/releases/</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Matlab</PackageTags>
-    <RepositoryUrl>https://github.com/mahalex/MatFileHandler</RepositoryUrl>
+    <RepositoryUrl>https://git.mahalex.net/mahalex/MatFileHandler</RepositoryUrl>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.Gitea" Version="8.0.0" PrivateAssets="All"/>
   </ItemGroup>
 
   <ItemGroup>
