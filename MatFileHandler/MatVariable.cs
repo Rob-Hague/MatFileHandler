@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler
+namespace MatFileHandler
 {
     /// <inheritdoc />
     internal class MatVariable : IVariable

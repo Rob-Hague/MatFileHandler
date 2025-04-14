@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler
+namespace MatFileHandler
 {
     /// <summary>
     /// Matlab's character array.

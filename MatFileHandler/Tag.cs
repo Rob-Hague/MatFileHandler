@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler
+namespace MatFileHandler
 {
     /// <summary>
     /// Type of the data attached to the tag.

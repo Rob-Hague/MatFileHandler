@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler
+namespace MatFileHandler
 {
     /// <summary>
     /// An interface for accessing the variable contents.

@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler
+namespace MatFileHandler
 {
     /// <summary>
     /// An interface providing access to array's contents.

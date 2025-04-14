@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler.Tests;
+namespace MatFileHandler.Tests;
 
 /// <summary>
 /// Method of writing .mat files for testing.

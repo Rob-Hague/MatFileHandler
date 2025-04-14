@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler.Tests;
+namespace MatFileHandler.Tests;
 
 /// <summary>
 /// Method of reading .mat files for testing.

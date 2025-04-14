@@ -1,4 +1,4 @@
-﻿namespace MatFileHandler.Tests
+namespace MatFileHandler.Tests
 {
     /// <summary>
     /// Data used in reading/writing tests.
