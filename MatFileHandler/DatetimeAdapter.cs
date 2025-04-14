@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Linq;
 using System.Numerics;
@@ -12,8 +10,6 @@ namespace MatFileHandler
     public class DatetimeAdapter
     {
         private readonly double[] data;
-        private readonly double[] data2;
-        private readonly int[] dimensions;
 
         private readonly DateTimeOffset epoch;
 
@@ -36,15 +32,13 @@ namespace MatFileHandler
                 case IArrayOf<double> dataArray:
                     data = dataArray.ConvertToDoubleArray()
                         ?? throw new HandlerException("Cannot extract data for the datetime adapter.");
-                    data2 = new double[data.Length];
-                    dimensions = dataArray.Dimensions;
+                    Dimensions = dataArray.Dimensions;
                     break;
                 case IArrayOf<Complex> dataComplex:
                     var complexData = dataComplex.ConvertToComplexArray()
                         ?? throw new HandlerException("Cannot extract data for the datetime adapter.");
                     data = complexData.Select(c => c.Real).ToArray();
-                    data2 = complexData.Select(c => c.Imaginary).ToArray();
-                    dimensions = dataComplex.Dimensions;
+                    Dimensions = dataComplex.Dimensions;
                     break;
                 default:
                     throw new HandlerException("Datetime data not found.");
@@ -54,7 +48,7 @@ namespace MatFileHandler
         /// <summary>
         /// Gets datetime array dimensions.
         /// </summary>
-        public int[] Dimensions => dimensions;
+        public int[] Dimensions { get; }
 
         /// <summary>
         /// Gets values of datetime object at given position in the array converted to <see cref="DateTimeOffset"/>.
@@ -66,11 +60,11 @@ namespace MatFileHandler
             get
             {
                 var milliseconds = data[Dimensions.DimFlatten(list)];
-                if (milliseconds < -62_135_596_800_000.0 || milliseconds > 253_402_300_799_999.0)
+                return milliseconds switch
                 {
-                    return null;
-                }
-                return epoch.AddMilliseconds(milliseconds);
+                    < -62_135_596_800_000.0 or > 253_402_300_799_999.0 => null,
+                    _ => epoch.AddMilliseconds(milliseconds),
+                };
             }
         }
     }

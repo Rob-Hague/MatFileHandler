@@ -1,10 +1,10 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+#if !NET461
 using System.Runtime.InteropServices;
+#endif
 
 namespace MatFileHandler
 {
@@ -72,11 +72,9 @@ namespace MatFileHandler
             var version = reader.ReadInt16();
             var endian = reader.ReadInt16();
             var isLittleEndian = endian == 19785;
-            if (!isLittleEndian)
-            {
-                throw new NotSupportedException("Big-endian files are not supported.");
-            }
-            return new Header(text, subsystemDataOffset, version);
+            return isLittleEndian
+                ? new Header(text, subsystemDataOffset, version)
+                : throw new NotSupportedException("Big-endian files are not supported.");
         }
 
         private static string GetOperatingSystem()

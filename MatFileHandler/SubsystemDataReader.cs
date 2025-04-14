@@ -1,8 +1,5 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -317,21 +314,11 @@ namespace MatFileHandler
 
         private static IArray TransformOpaqueData(IArray array, SubsystemData subsystemData)
         {
-            if (array is MatNumericalArrayOf<uint> uintArray)
+            if (array is MatNumericalArrayOf<uint> uintArray &&
+                uintArray.Data.Length == 6 &&
+                uintArray.Data[0] == 3707764736u)
             {
-                if (uintArray.Data[0] == 3707764736u)
-                {
-                    var (dimensions, indexToObjectId, classIndex) = DataElementReader.ParseOpaqueData(uintArray.Data);
-                    return new OpaqueLink(
-                        uintArray.Name,
-                        string.Empty,
-                        string.Empty,
-                        dimensions,
-                        uintArray,
-                        indexToObjectId,
-                        classIndex,
-                        subsystemData);
-                }
+                return ObjectParser.ParseObject(uintArray, subsystemData);
             }
 
             if (array is MatCellArray cellArray)
@@ -344,10 +331,30 @@ namespace MatFileHandler
                 }
             }
 
+            if (array is MatStructureArray structureArray)
+            {
+                var newFields = new Dictionary<string, List<IArray>>();
+                foreach (var pair in structureArray.Fields)
+                {
+                    var values = pair.Value;
+                    var transformedValues = new List<IArray>(values.Count);
+                    foreach (var value in values)
+                    {
+                        var transformedValue = TransformOpaqueData(value, subsystemData);
+                        transformedValues.Add(transformedValue);
+                    }
+                    newFields[pair.Key] = transformedValues;
+                }
+                foreach (var pair in newFields)
+                {
+                    structureArray.Fields[pair.Key] = pair.Value;
+                }
+            }
+
             return array;
         }
 
-        private struct ObjectClassInformation
+        private readonly struct ObjectClassInformation
         {
             public ObjectClassInformation(int embeddedObjectPosition, int objectPosition, int loadingOrder, int classId)
             {

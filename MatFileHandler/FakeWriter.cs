@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -202,32 +200,27 @@ namespace MatFileHandler
             WriteDataElement(buffer);
         }
 
-        private unsafe int GetLengthOfByteArray<T>(int dataLength)
+        private static unsafe int GetLengthOfByteArray<T>(int dataLength)
             where T : unmanaged
         {
             return dataLength * sizeof(T);
         }
 
-        private unsafe int GetLengthOfPairOfByteArrays<T>(ComplexOf<T>[] data)
+        private static unsafe int GetLengthOfPairOfByteArrays<T>(ComplexOf<T>[] data)
             where T : unmanaged
         {
             return data.Length * sizeof(T);
         }
 
-        private unsafe int GetLengthOfPairOfByteArrays(Complex[] data)
+        private static unsafe int GetLengthOfPairOfByteArrays(Complex[] data)
         {
             return data.Length * sizeof(double);
         }
 
-        private int CalculatePadding(int length)
+        private static int CalculatePadding(int length)
         {
             var rem = length % 8;
-            if (rem == 0)
-            {
-                return 0;
-            }
-
-            return 8 - rem;
+            return rem == 0 ? 0 : 8 - rem;
         }
 
         private void WriteDataElement(int dataLength)
@@ -275,7 +268,7 @@ namespace MatFileHandler
             }
         }
 
-        private (int rowIndexLength, int columnIndexLength, int dataLength, uint nonZero) PrepareSparseArrayData<T>(
+        private static (int rowIndexLength, int columnIndexLength, int dataLength, uint nonZero) PrepareSparseArrayData<T>(
             ISparseArrayOf<T> array)
             where T : struct, IEquatable<T>
         {
@@ -293,7 +286,7 @@ namespace MatFileHandler
         private void WriteFieldNames(IEnumerable<string> fieldNames)
         {
             var fieldNamesArray = fieldNames.Select(name => Encoding.ASCII.GetBytes(name)).ToArray();
-            var maxFieldName = fieldNamesArray.Select(name => name.Length).Max() + 1;
+            var maxFieldName = fieldNamesArray.Max(name => name.Length) + 1;
             WriteDataElement(GetLengthOfByteArray<int>(1));
             var buffer = new byte[fieldNamesArray.Length * maxFieldName];
             var startPosition = 0;

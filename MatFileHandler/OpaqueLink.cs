@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -78,15 +76,7 @@ namespace MatFileHandler
         /// <inheritdoc />
         public IArray this[string field, params int[] list]
         {
-            get
-            {
-                if (TryGetValue(field, out var result, list))
-                {
-                    return result!;
-                }
-
-                throw new IndexOutOfRangeException();
-            }
+            get => TryGetValue(field, out var result, list) ? result! : throw new ArgumentOutOfRangeException(nameof(list));
             set => throw new NotImplementedException();
         }
 
@@ -97,7 +87,7 @@ namespace MatFileHandler
             set => throw new NotImplementedException();
         }
 
-        private IReadOnlyDictionary<string, IArray> ExtractObject(int i)
+        private OpaqueObjectArrayElement ExtractObject(int i)
         {
             return new OpaqueObjectArrayElement(this, i);
         }
@@ -106,7 +96,7 @@ namespace MatFileHandler
         {
             var index = Dimensions.DimFlatten(list);
             var maybeFieldIndex = SubsystemData.ClassInformation[ClassIndex].FindField(field);
-            if (!(maybeFieldIndex is int fieldIndex))
+            if (maybeFieldIndex is not int fieldIndex)
             {
                 output = default;
                 return false;
@@ -171,8 +161,8 @@ namespace MatFileHandler
                 }
             }
 
-            /// <inheritdoc />
 #pragma warning disable CS8767
+            /// <inheritdoc />
             public bool TryGetValue(string key, out IArray? value)
 #pragma warning restore CS8767
             {

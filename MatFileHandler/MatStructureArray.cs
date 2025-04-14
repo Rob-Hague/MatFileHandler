@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -69,7 +67,7 @@ namespace MatFileHandler
                 "Cannot set structure elements via this[params int[]] indexer. Use this[string, int[]] instead.");
         }
 
-        private IReadOnlyDictionary<string, IArray> ExtractStructure(int i)
+        private MatStructureArrayElement ExtractStructure(int i)
         {
             return new MatStructureArrayElement(this, i);
         }

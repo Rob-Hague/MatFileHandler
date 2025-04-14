@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,11 +16,7 @@ namespace MatFileHandler
         /// <param name="variables">List of variables.</param>
         public MatFile(IEnumerable<IVariable> variables)
         {
-            _variables = new Dictionary<string, IVariable>();
-            foreach (var variable in variables)
-            {
-                _variables[variable.Name] = variable;
-            }
+            _variables = variables.ToDictionary(v => v.Name, v => v);
         }
 
         /// <inheritdoc />

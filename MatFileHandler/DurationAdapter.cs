@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 
 namespace MatFileHandler
@@ -9,7 +7,6 @@ namespace MatFileHandler
     /// </summary>
     public class DurationAdapter
     {
-        private readonly int[] dimensions;
         private readonly double[] data;
 
         /// <summary>
@@ -27,13 +24,13 @@ namespace MatFileHandler
             var dataObject = matObject["millis", 0];
             data = dataObject.ConvertToDoubleArray()
                 ?? throw new HandlerException("Cannot extract data for the duration adapter.");
-            dimensions = dataObject.Dimensions;
+            Dimensions = dataObject.Dimensions;
         }
 
         /// <summary>
         /// Gets duration array dimensions.
         /// </summary>
-        public int[] Dimensions => dimensions;
+        public int[] Dimensions { get; }
 
         /// <summary>
         /// Gets duration object at given position.

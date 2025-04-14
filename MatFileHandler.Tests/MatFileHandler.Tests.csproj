@@ -2,10 +2,9 @@
   <PropertyGroup>
     <TargetFrameworks>net461;net472;net8.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
-	<LangVersion>10.0</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <CodeAnalysisRuleSet>..\MatFileHandler.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Debug\net5.0\MatFileHandler.Tests.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>

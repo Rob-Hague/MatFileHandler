@@ -1,6 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -28,10 +25,8 @@ namespace MatFileHandler
         /// <returns>Contents of the file.</returns>
         public IMatFile Read()
         {
-            using (var reader = new BinaryReader(new PositionTrackingStream(Stream)))
-            {
-                return Read(reader);
-            }
+            using var reader = new BinaryReader(new PositionTrackingStream(Stream));
+            return Read(reader);
         }
 
         /// <summary>
@@ -51,25 +46,23 @@ namespace MatFileHandler
             var dataElementReader = new DataElementReader(subsystemData);
             while (true)
             {
-                try
-                {
-                    var position = reader.BaseStream.Position;
-                    var dataElement = dataElementReader.Read(reader);
-                    if (position == subsystemDataOffset)
-                    {
-                        var subsystemDataElement = dataElement as IArrayOf<byte>
-                            ?? throw new HandlerException("Cannot parse subsystem data element.");
-                        var newSubsystemData = ReadSubsystemData(subsystemDataElement.Data, subsystemData);
-                        subsystemData.Set(newSubsystemData);
-                    }
-                    else
-                    {
-                        variables.Add(new RawVariable(position, dataElement));
-                    }
-                }
-                catch (EndOfStreamException)
+                var position = reader.BaseStream.Position;
+                var dataElement = dataElementReader.Read(reader);
+                if (dataElement is null)
                 {
                     break;
+                }
+
+                if (position == subsystemDataOffset)
+                {
+                    var subsystemDataElement = dataElement as IArrayOf<byte>
+                        ?? throw new HandlerException("Cannot parse subsystem data element.");
+                    var newSubsystemData = ReadSubsystemData(subsystemDataElement.Data, subsystemData);
+                    subsystemData.Set(newSubsystemData);
+                }
+                else
+                {
+                    variables.Add(new RawVariable(position, dataElement));
                 }
             }
 
@@ -88,23 +81,21 @@ namespace MatFileHandler
             return ReadRawVariables(reader, subsystemDataOffset, subsystemData);
         }
 
-        private static IMatFile Read(BinaryReader reader)
+        private static MatFile Read(BinaryReader reader)
         {
             var header = ReadHeader(reader);
             var rawVariables = ReadRawVariables(reader, header.SubsystemDataOffset);
             var variables = new List<IVariable>();
             foreach (var variable in rawVariables)
             {
-                var array = variable.DataElement as MatArray;
-                if (array is null)
+                if (variable.DataElement is MatArray array)
                 {
-                    continue;
+                    variables.Add(
+                        new MatVariable(
+                            array,
+                            array.Name,
+                            array.Flags.Variable.HasFlag(Variable.IsGlobal)));
                 }
-
-                variables.Add(new MatVariable(
-                    array,
-                    array.Name,
-                    array.Flags.Variable.HasFlag(Variable.IsGlobal)));
             }
 
             return new MatFile(variables);

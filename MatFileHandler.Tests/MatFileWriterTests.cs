@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.IO;
 using System.Numerics;
@@ -17,8 +15,8 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing a simple Double array.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestWrite(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestWrite(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var array = builder.NewArray<double>(1, 2);
@@ -26,7 +24,7 @@ namespace MatFileHandler.Tests
             array[1] = 17.0;
             var variable = builder.NewVariable("test", array);
             var actual = builder.NewFile(new[] { variable });
-            MatCompareWithTestData("good", "double-array", actual, method);
+            MatCompareWithTestData("good", "double-array", actual, method, options);
         }
 
         /// <summary>
@@ -51,8 +49,8 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Test writing lower and upper limits of integer data types.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestLimits(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestLimits(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var int8 = builder.NewVariable("int8_", builder.NewArray(CommonData.Int8Limits, 1, 2));
@@ -64,14 +62,14 @@ namespace MatFileHandler.Tests
             var int64 = builder.NewVariable("int64_", builder.NewArray(CommonData.Int64Limits, 1, 2));
             var uint64 = builder.NewVariable("uint64_", builder.NewArray(CommonData.UInt64Limits, 1, 2));
             var actual = builder.NewFile(new[] { int16, int32, int64, int8, uint16, uint32, uint64, uint8 });
-            MatCompareWithTestData("good", "limits", actual, method);
+            MatCompareWithTestData("good", "limits", actual, method, options);
         }
 
         /// <summary>
         /// Test writing lower and upper limits of integer-based complex data types.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestLimitsComplex(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestLimitsComplex(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var int8Complex = builder.NewVariable(
@@ -103,26 +101,26 @@ namespace MatFileHandler.Tests
                 int16Complex, int32Complex, int64Complex, int8Complex,
                 uint16Complex, uint32Complex, uint64Complex, uint8Complex,
             });
-            MatCompareWithTestData("good", "limits_complex", actual, method);
+            MatCompareWithTestData("good", "limits_complex", actual, method, options);
         }
 
         /// <summary>
         /// Test writing a wide-Unicode symbol.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestUnicodeWide(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestUnicodeWide(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var s = builder.NewVariable("s", builder.NewCharArray("🍆"));
             var actual = builder.NewFile(new[] { s });
-            MatCompareWithTestData("good", "unicode-wide", actual, method);
+            MatCompareWithTestData("good", "unicode-wide", actual, method, options);
         }
 
         /// <summary>
         /// Test writing a sparse array.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestSparseArray(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestSparseArray(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var sparseArray = builder.NewSparseArray<double>(4, 5);
@@ -132,14 +130,14 @@ namespace MatFileHandler.Tests
             sparseArray[2, 3] = 4;
             var sparse = builder.NewVariable("sparse_", sparseArray);
             var actual = builder.NewFile(new[] { sparse });
-            MatCompareWithTestData("good", "sparse", actual, method);
+            MatCompareWithTestData("good", "sparse", actual, method, options);
         }
 
         /// <summary>
         /// Test writing a structure array.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestStructure(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestStructure(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var structure = builder.NewStructureArray(new[] { "x", "y" }, 2, 3);
@@ -160,27 +158,27 @@ namespace MatFileHandler.Tests
             structure["y", 1, 2] = builder.NewEmpty();
             var struct_ = builder.NewVariable("struct_", structure);
             var actual = builder.NewFile(new[] { struct_ });
-            MatCompareWithTestData("good", "struct", actual, method);
+            MatCompareWithTestData("good", "struct", actual, method, options);
         }
 
         /// <summary>
         /// Test writing a logical array.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestLogical(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestLogical(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var logical = builder.NewArray(new[] { true, false, true, true, false, true }, 2, 3);
             var logicalVariable = builder.NewVariable("logical_", logical);
             var actual = builder.NewFile(new[] { logicalVariable });
-            MatCompareWithTestData("good", "logical", actual, method);
+            MatCompareWithTestData("good", "logical", actual, method, options);
         }
 
         /// <summary>
         /// Test writing a sparse logical array.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestSparseLogical(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestSparseLogical(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var array = builder.NewSparseArray<bool>(2, 3);
@@ -190,14 +188,14 @@ namespace MatFileHandler.Tests
             array[1, 2] = true;
             var sparseLogical = builder.NewVariable("sparse_logical", array);
             var actual = builder.NewFile(new[] { sparseLogical });
-            MatCompareWithTestData("good", "sparse_logical", actual, method);
+            MatCompareWithTestData("good", "sparse_logical", actual, method, options);
         }
 
         /// <summary>
         /// Test writing a sparse complex array.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestSparseComplex(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestSparseComplex(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var array = builder.NewSparseArray<Complex>(2, 2);
@@ -206,48 +204,48 @@ namespace MatFileHandler.Tests
             array[1, 1] = 0.5 + Complex.ImaginaryOne;
             var sparseComplex = builder.NewVariable("sparse_complex", array);
             var actual = builder.NewFile(new[] { sparseComplex });
-            MatCompareWithTestData("good", "sparse_complex", actual, method);
+            MatCompareWithTestData("good", "sparse_complex", actual, method, options);
         }
 
         /// <summary>
         /// Test writing a global variable.
         /// </summary>
-        [Theory, MemberData(nameof(MatFileWritingMethods))]
-        public void TestGlobal(MatFileWritingMethod method)
+        [Theory, MemberData(nameof(MatFileWritingTestData))]
+        public void TestGlobal(MatFileWritingMethod method, MatFileWriterOptionsForTests options)
         {
             var builder = new DataBuilder();
             var array = builder.NewArray(new double[] { 1, 3, 5 }, 1, 3);
             var global = builder.NewVariable("global_", array, true);
             var actual = builder.NewFile(new[] { global });
-            MatCompareWithTestData("good", "global", actual, method);
+            MatCompareWithTestData("good", "global", actual, method, options);
         }
 
         /// <summary>
         /// Various writing methods for testing writing of .mat files.
         /// </summary>
-        public static TheoryData<MatFileWritingMethod> MatFileWritingMethods
+        public static TheoryData<MatFileWritingMethod, MatFileWriterOptionsForTests> MatFileWritingTestData
         {
             get
             {
-                return new TheoryData<MatFileWritingMethod>
+                var always = new MatFileWriterOptions { UseCompression = CompressionUsage.Always};
+                var never = new MatFileWriterOptions { UseCompression = CompressionUsage.Never };
+                var data = new TheoryData<MatFileWritingMethod, MatFileWriterOptionsForTests>
                 {
-                    new MatFileWritingToMemoryStream(null),
-                    new MatFileWritingToMemoryStream(new MatFileWriterOptions { UseCompression = CompressionUsage.Always }),
-                    new MatFileWritingToMemoryStream(new MatFileWriterOptions { UseCompression = CompressionUsage.Never }),
-                    new MatFileWritingToUnseekableStream(null),
-                    new MatFileWritingToUnseekableStream(new MatFileWriterOptions { UseCompression = CompressionUsage.Always }),
-                    new MatFileWritingToUnseekableStream(new MatFileWriterOptions { UseCompression = CompressionUsage.Never }),
-                    new MatFileWritingToUnalignedMemoryStream(null),
-                    new MatFileWritingToUnalignedMemoryStream(new MatFileWriterOptions { UseCompression = CompressionUsage.Always }),
-                    new MatFileWritingToUnalignedMemoryStream(new MatFileWriterOptions { UseCompression = CompressionUsage.Never }),
+                    { MatFileWritingMethod.NormalStream, MatFileWriterOptionsForTests.None },
+                    { MatFileWritingMethod.NormalStream, MatFileWriterOptionsForTests.Always },
+                    { MatFileWritingMethod.NormalStream, MatFileWriterOptionsForTests.Never },
+                    { MatFileWritingMethod.UnseekableStream, MatFileWriterOptionsForTests.None },
+                    { MatFileWritingMethod.UnseekableStream, MatFileWriterOptionsForTests.Always },
+                    { MatFileWritingMethod.UnseekableStream, MatFileWriterOptionsForTests.Never },
+                    { MatFileWritingMethod.UnalignedStream, MatFileWriterOptionsForTests.None },
+                    { MatFileWritingMethod.UnalignedStream, MatFileWriterOptionsForTests.Always },
+                    { MatFileWritingMethod.UnalignedStream, MatFileWriterOptionsForTests.Never },
                 };
+                return data;
             }
         }
 
-        private static AbstractTestDataFactory<IMatFile> GetMatTestData(string factoryName) =>
-            new MatTestDataFactory(Path.Combine(TestDirectory, factoryName));
-
-        private void CompareSparseArrays<T>(ISparseArrayOf<T> expected, ISparseArrayOf<T> actual)
+        private static void CompareSparseArrays<T>(ISparseArrayOf<T> expected, ISparseArrayOf<T> actual)
           where T : struct
         {
             Assert.NotNull(actual);
@@ -255,7 +253,7 @@ namespace MatFileHandler.Tests
             Assert.Equal(expected.Data, actual.Data);
         }
 
-        private void CompareStructureArrays(IStructureArray expected, IStructureArray actual)
+        private static void CompareStructureArrays(IStructureArray expected, IStructureArray actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
@@ -269,7 +267,7 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private void CompareCellArrays(ICellArray expected, ICellArray actual)
+        private static void CompareCellArrays(ICellArray expected, ICellArray actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
@@ -279,21 +277,21 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private void CompareNumericalArrays<T>(IArrayOf<T> expected, IArrayOf<T> actual)
+        private static void CompareNumericalArrays<T>(IArrayOf<T> expected, IArrayOf<T> actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
             Assert.Equal(expected.Data, actual.Data);
         }
 
-        private void CompareCharArrays(ICharArray expected, ICharArray actual)
+        private static void CompareCharArrays(ICharArray expected, ICharArray actual)
         {
             Assert.NotNull(actual);
             Assert.Equal(expected.Dimensions, actual.Dimensions);
             Assert.Equal(expected.String, actual.String);
         }
 
-        private void CompareMatArrays(IArray expected, IArray actual)
+        private static void CompareMatArrays(IArray expected, IArray actual)
         {
             switch (expected)
             {
@@ -384,7 +382,7 @@ namespace MatFileHandler.Tests
             throw new NotSupportedException();
         }
 
-        private void CompareMatFiles(IMatFile expected, IMatFile actual)
+        private static void CompareMatFiles(IMatFile expected, IMatFile actual)
         {
             Assert.Equal(expected.Variables.Length, actual.Variables.Length);
             for (var i = 0; i < expected.Variables.Length; i++)
@@ -397,22 +395,26 @@ namespace MatFileHandler.Tests
             }
         }
 
-        private void MatCompareWithTestData(
+        private static void MatCompareWithTestData(
             string factoryName,
             string testName,
             IMatFile actual,
-            MatFileWritingMethod method)
+            MatFileWritingMethod method,
+            MatFileWriterOptionsForTests options)
         {
-            var expected = GetMatTestData(factoryName)[testName];
-            var buffer = method.WriteMatFile(actual);
+            var fullFileName = Path.Combine("test-data", "good", $"{testName}.mat");
+            var expected = MatFileReadingMethods.ReadMatFile(
+                MatFileReadingMethod.NormalStream,
+                fullFileName);
+            var buffer = MatFileWritingMethods.WriteMatFile(method, options, actual);
             using var stream = new MemoryStream(buffer);
             var reader = new MatFileReader(stream);
             var actualRead = reader.Read();
             CompareMatFiles(expected, actualRead);
         }
 
-        private ComplexOf<T>[] CreateComplexLimits<T>(T[] limits)
-          where T : struct
+        private static ComplexOf<T>[] CreateComplexLimits<T>(T[] limits)
+            where T : struct
         {
             return new[] { new ComplexOf<T>(limits[0], limits[1]), new ComplexOf<T>(limits[1], limits[0]) };
         }

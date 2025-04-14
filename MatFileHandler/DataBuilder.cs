@@ -1,10 +1,9 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
+#pragma warning disable CA1822
 namespace MatFileHandler
 {
     /// <summary>
@@ -52,7 +51,7 @@ namespace MatFileHandler
         {
             if (data.Length != dimensions.NumberOfElements())
             {
-                throw new ArgumentException("Data size does not match the specified dimensions", "data");
+                throw new ArgumentException("Data size does not match the specified dimensions", nameof(data));
             }
             return new MatNumericalArrayOf<T>(GetStandardFlags<T>(), dimensions, string.Empty, data);
         }
@@ -157,7 +156,7 @@ namespace MatFileHandler
             return new MatFile(variables);
         }
 
-        private ArrayFlags ConstructArrayFlags(ArrayType class_, bool isComplex = false, bool isLogical = false)
+        private static ArrayFlags ConstructArrayFlags(ArrayType class_, bool isComplex = false, bool isLogical = false)
         {
             return new ArrayFlags
             {
@@ -167,7 +166,7 @@ namespace MatFileHandler
             };
         }
 
-        private ArrayFlags GetStandardFlags<T>()
+        private static ArrayFlags GetStandardFlags<T>()
         {
             if (typeof(T) == typeof(sbyte))
             {

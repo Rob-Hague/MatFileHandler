@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.IO;
 
@@ -49,7 +47,7 @@ namespace MatFileHandler
         /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int bytesRead = _baseStream.Read(buffer, offset, (int)Math.Min(count, Length - _bytesRead));
+            var bytesRead = _baseStream.Read(buffer, offset, (int)Math.Min(count, Length - _bytesRead));
 
             _bytesRead += bytesRead;
 

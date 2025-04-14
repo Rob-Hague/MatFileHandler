@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 namespace MatFileHandler
 {
     /// <summary>
@@ -10,7 +8,7 @@ namespace MatFileHandler
         /// <summary>
         /// Gets default options.
         /// </summary>
-        public static MatFileWriterOptions Default => new MatFileWriterOptions
+        public static MatFileWriterOptions Default => new()
         {
             UseCompression = CompressionUsage.Always,
         };

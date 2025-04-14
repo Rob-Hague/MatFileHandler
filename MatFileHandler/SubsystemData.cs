@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Collections.Generic;
 
@@ -119,12 +117,7 @@ namespace MatFileHandler
             /// <returns>Field index.</returns>
             public int? FindField(string fieldName)
             {
-                if (fieldToIndex.TryGetValue(fieldName, out var index))
-                {
-                    return index;
-                }
-
-                return null;
+                return fieldToIndex.TryGetValue(fieldName, out var index) ? index : null;
             }
         }
 

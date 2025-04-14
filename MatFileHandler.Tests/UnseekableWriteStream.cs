@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.IO;
 
@@ -8,7 +6,7 @@ namespace MatFileHandler.Tests
     /// <summary>
     /// A stream which wraps another stream and forbids seeking in it.
     /// </summary>
-    internal class UnseekableWriteStream : Stream
+    internal sealed class UnseekableWriteStream : Stream
     {
         public UnseekableWriteStream(Stream baseStream)
         {

@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.IO;
 
@@ -9,7 +7,7 @@ namespace MatFileHandler.Tests
     /// A stream which wraps another stream and only reads one byte at a time,
     /// while forbidding seeking in it.
     /// </summary>
-    internal class PartialUnseekableReadStream : Stream
+    internal sealed class PartialUnseekableReadStream : Stream
     {
         private readonly Stream _baseStream;
 

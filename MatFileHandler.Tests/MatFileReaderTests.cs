@@ -1,6 +1,5 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -19,9 +18,9 @@ namespace MatFileHandler.Tests
         /// Test reading all files in a given test set.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestReader(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestReader(MatFileReadingMethod method)
         {
-            foreach (var matFile in testFactory.GetAllTestData())
+            foreach (var matFile in ReadAllTestFiles(method))
             {
                 Assert.NotEmpty(matFile.Variables);
             }
@@ -31,9 +30,9 @@ namespace MatFileHandler.Tests
         /// Test reading lower and upper limits of integer data types.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestLimits(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestLimits(MatFileReadingMethod method)
         {
-            var matFile = testFactory["limits"];
+            var matFile = ReadTestFile("limits", method);
             IArray array;
             array = matFile["int8_"].Value;
             CheckLimits(array as IArrayOf<sbyte>, CommonData.Int8Limits);
@@ -65,9 +64,9 @@ namespace MatFileHandler.Tests
         /// Test writing lower and upper limits of integer-based complex data types.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestComplexLimits(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestComplexLimits(MatFileReadingMethod method)
         {
-            var matFile = testFactory["limits_complex"];
+            var matFile = ReadTestFile("limits_complex", method);
             IArray array;
             array = matFile["int8_complex"].Value;
             CheckComplexLimits(array as IArrayOf<ComplexOf<sbyte>>, CommonData.Int8Limits);
@@ -101,9 +100,9 @@ namespace MatFileHandler.Tests
         /// Test reading an ASCII-encoded string.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestAscii(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestAscii(MatFileReadingMethod method)
         {
-            var matFile = testFactory["ascii"];
+            var matFile = ReadTestFile("ascii", method);
             var arrayAscii = matFile["s"].Value as ICharArray;
             Assert.NotNull(arrayAscii);
             Assert.Equal(new[] { 1, 3 }, arrayAscii.Dimensions);
@@ -115,9 +114,9 @@ namespace MatFileHandler.Tests
         /// Test reading a Unicode string.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestUnicode(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestUnicode(MatFileReadingMethod method)
         {
-            var matFile = testFactory["unicode"];
+            var matFile = ReadTestFile("unicode", method);
             var arrayUnicode = matFile["s"].Value as ICharArray;
             Assert.NotNull(arrayUnicode);
             Assert.Equal(new[] { 1, 2 }, arrayUnicode.Dimensions);
@@ -130,9 +129,9 @@ namespace MatFileHandler.Tests
         /// Test reading a wide Unicode string.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestUnicodeWide(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestUnicodeWide(MatFileReadingMethod method)
         {
-            var matFile = testFactory["unicode-wide"];
+            var matFile = ReadTestFile("unicode-wide", method);
             var arrayUnicodeWide = matFile["s"].Value as ICharArray;
             Assert.NotNull(arrayUnicodeWide);
             Assert.Equal(new[] { 1, 2 }, arrayUnicodeWide.Dimensions);
@@ -143,9 +142,9 @@ namespace MatFileHandler.Tests
         /// Test converting a structure array to a Double array.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestConvertToDoubleArray(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestConvertToDoubleArray(MatFileReadingMethod method)
         {
-            var matFile = testFactory["struct"];
+            var matFile = ReadTestFile("struct", method);
             var array = matFile.Variables[0].Value;
             Assert.Null(array.ConvertToDoubleArray());
         }
@@ -155,9 +154,9 @@ namespace MatFileHandler.Tests
         /// </summary>
         /// <returns>Should return null.</returns>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestConvertToComplexArray(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestConvertToComplexArray(MatFileReadingMethod method)
         {
-            var matFile = testFactory["struct"];
+            var matFile = ReadTestFile("struct", method);
             var array = matFile.Variables[0].Value;
             Assert.Null(array.ConvertToComplexArray());
         }
@@ -166,9 +165,9 @@ namespace MatFileHandler.Tests
         /// Test reading an enumeration.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestEnum(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestEnum(MatFileReadingMethod method)
         {
-            var matFile = testFactory["enum"];
+            var matFile = ReadTestFile("enum", method);
             var days = matFile["days"].Value;
             var enumeration = new EnumAdapter(days);
             Assert.Equal(5, enumeration.Values.Count);
@@ -183,9 +182,9 @@ namespace MatFileHandler.Tests
         /// Test reading a structure array.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestStruct(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestStruct(MatFileReadingMethod method)
         {
-            var matFile = testFactory["struct"];
+            var matFile = ReadTestFile("struct", method);
             var structure = matFile["struct_"].Value as IStructureArray;
             Assert.NotNull(structure);
             Assert.Equal(new[] { "x", "y" }, structure.FieldNames);
@@ -237,9 +236,9 @@ namespace MatFileHandler.Tests
         /// Test reading a sparse array.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestSparse(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestSparse(MatFileReadingMethod method)
         {
-            var matFile = testFactory["sparse"];
+            var matFile = ReadTestFile("sparse", method);
             var sparseArray = matFile["sparse_"].Value as ISparseArrayOf<double>;
             Assert.NotNull(sparseArray);
             Assert.Equal(new[] { 4, 5 }, sparseArray.Dimensions);
@@ -267,9 +266,9 @@ namespace MatFileHandler.Tests
         /// Test reading a logical array.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestLogical(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestLogical(MatFileReadingMethod method)
         {
-            var matFile = testFactory["logical"];
+            var matFile = ReadTestFile("logical", method);
             var array = matFile["logical_"].Value;
             var logicalArray = array as IArrayOf<bool>;
             Assert.NotNull(logicalArray);
@@ -285,9 +284,9 @@ namespace MatFileHandler.Tests
         /// Test reading a sparse logical array.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestSparseLogical(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestSparseLogical(MatFileReadingMethod method)
         {
-            var matFile = testFactory["sparse_logical"];
+            var matFile = ReadTestFile("sparse_logical", method);
             var array = matFile["sparse_logical"].Value;
             var sparseArray = array as ISparseArrayOf<bool>;
             Assert.NotNull (sparseArray);
@@ -304,9 +303,9 @@ namespace MatFileHandler.Tests
         /// Test reading a global variable.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestGlobal(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestGlobal(MatFileReadingMethod method)
         {
-            var matFile = testFactory["global"];
+            var matFile = ReadTestFile("global", method);
             var variable = matFile.Variables.First();
             Assert.True(variable.IsGlobal);
         }
@@ -315,9 +314,9 @@ namespace MatFileHandler.Tests
         /// Test reading a sparse complex array.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TextSparseComplex(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TextSparseComplex(MatFileReadingMethod method)
         {
-            var matFile = testFactory["sparse_complex"];
+            var matFile = ReadTestFile("sparse_complex", method);
             var array = matFile["sparse_complex"].Value;
             var sparseArray = array as ISparseArrayOf<Complex>;
             Assert.NotNull(sparseArray);
@@ -331,9 +330,9 @@ namespace MatFileHandler.Tests
         /// Test reading an object.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestObject(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestObject(MatFileReadingMethod method)
         {
-            var matFile = testFactory["object"];
+            var matFile = ReadTestFile("object", method);
             var obj = matFile["object_"].Value as IMatObject;
             Assert.NotNull(obj);
             Assert.Equal("Point", obj.ClassName);
@@ -348,9 +347,9 @@ namespace MatFileHandler.Tests
         /// Test reading another object.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestObject2(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestObject2(MatFileReadingMethod method)
         {
-            var matFile = testFactory["object2"];
+            var matFile = ReadTestFile("object2", method);
             var obj = matFile["object2"].Value as IMatObject;
             Assert.NotNull(obj);
             Assert.Equal("Point", obj.ClassName);
@@ -371,9 +370,9 @@ namespace MatFileHandler.Tests
         /// Test reading a table.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestTable(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestTable(MatFileReadingMethod method)
         {
-            var matFile = testFactory["table"];
+            var matFile = ReadTestFile("table", method);
             var obj = matFile["table_"].Value as IMatObject;
             var table = new TableAdapter(obj);
             Assert.Equal(3, table.NumberOfRows);
@@ -389,12 +388,36 @@ namespace MatFileHandler.Tests
         }
 
         /// <summary>
+        /// Test reading a deeply nested table.
+        /// </summary>
+        [Theory, MemberData(nameof(TestDataFactories))]
+        public void TestDeepTable(MatFileReadingMethod method)
+        {
+            var matFile = ReadTestFile("table-deep", method);
+            var obj = matFile["t"].Value as IMatObject;
+            var table = new TableAdapter(obj);
+            Assert.Equal(1, table.NumberOfRows);
+            Assert.Equal(2, table.NumberOfVariables);
+            Assert.Equal(new[] { "s", "another" }, table.VariableNames);
+            var s = table["s"] as IStructureArray;
+            Assert.Equal(new[] { "a", "b", "c" }, s.FieldNames);
+            var c = s["c", 0];
+            var internalTable = new TableAdapter(c);
+            Assert.Equal(2, internalTable.NumberOfRows);
+            Assert.Equal(2, internalTable.NumberOfVariables);
+            Assert.Equal(new[] { "x", "y" }, internalTable.VariableNames);
+            var y = new StringAdapter(internalTable["y"]);
+            Assert.Equal("3", y[0]);
+            Assert.Equal("abc", y[1]);
+        }
+
+        /// <summary>
         /// Test reading a table with strings
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestTableWithStrings(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestTableWithStrings(MatFileReadingMethod method)
         {
-            var matFile = testFactory["table-with-strings"];
+            var matFile = ReadTestFile("table-with-strings", method);
             var obj = matFile["t"].Value as IMatObject;
             var table = new TableAdapter(obj);
             Assert.Equal(5, table.NumberOfRows);
@@ -417,9 +440,9 @@ namespace MatFileHandler.Tests
         /// Test subobjects within objects.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestSubobjects(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestSubobjects(MatFileReadingMethod method)
         {
-            var matFile = testFactory["pointWithSubpoints"];
+            var matFile = ReadTestFile("pointWithSubpoints", method);
             var p = matFile["p"].Value as IMatObject;
             Assert.Equal("Point", p.ClassName);
             var x = p["x"] as IMatObject;
@@ -440,9 +463,9 @@ namespace MatFileHandler.Tests
         /// Test nested objects.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestNestedObjects(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestNestedObjects(MatFileReadingMethod method)
         {
-            var matFile = testFactory["subsubPoint"];
+            var matFile = ReadTestFile("subsubPoint", method);
             var p = matFile["p"].Value as IMatObject;
             Assert.Equal("Point", p.ClassName);
             Assert.Equal(new[] { 1.0 }, p["x"].ConvertToDoubleArray());
@@ -458,9 +481,9 @@ namespace MatFileHandler.Tests
         /// Test datetime objects.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestDatetime(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestDatetime(MatFileReadingMethod method)
         {
-            var matFile = testFactory["datetime"];
+            var matFile = ReadTestFile("datetime", method);
             var d = matFile["d"].Value as IMatObject;
             var datetime = new DatetimeAdapter(d);
             Assert.Equal(new[] { 1, 2 }, datetime.Dimensions);
@@ -472,9 +495,9 @@ namespace MatFileHandler.Tests
         /// Another test for datetime objects.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestDatetime2(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestDatetime2(MatFileReadingMethod method)
         {
-            var matFile = testFactory["datetime2"];
+            var matFile = ReadTestFile("datetime2", method);
             var d = matFile["d"].Value as IMatObject;
             var datetime = new DatetimeAdapter(d);
             Assert.Equal(new[] { 1, 1 }, datetime.Dimensions);
@@ -487,9 +510,9 @@ namespace MatFileHandler.Tests
         /// Test string objects.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestString(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestString(MatFileReadingMethod method)
         {
-            var matFile = testFactory["string"];
+            var matFile = ReadTestFile("string", method);
             var s = matFile["s"].Value as IMatObject;
             var str = new StringAdapter(s);
             Assert.Equal(new[] { 4, 1 }, str.Dimensions);
@@ -503,9 +526,9 @@ namespace MatFileHandler.Tests
         /// Test duration objects.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestDuration(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestDuration(MatFileReadingMethod method)
         {
-            var matFile = testFactory["duration"];
+            var matFile = ReadTestFile("duration", method);
             var d = matFile["d"].Value as IMatObject;
             var duration = new DurationAdapter(d);
             Assert.Equal(new[] { 1, 3 }, duration.Dimensions);
@@ -518,9 +541,9 @@ namespace MatFileHandler.Tests
         /// Test unrepresentable datetime.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void TestDatetime_Unrepresentable(AbstractTestDataFactory<IMatFile> testFactory)
+        public void TestDatetime_Unrepresentable(MatFileReadingMethod method)
         {
-            var matFile = testFactory["datetime-unrepresentable"];
+            var matFile = ReadTestFile("datetime-unrepresentable", method);
             var obj = matFile["d"].Value as IMatObject;
             var datetime = new DatetimeAdapter(obj);
             var d0 = datetime[0];
@@ -531,9 +554,9 @@ namespace MatFileHandler.Tests
         /// Test 3-dimensional arrays.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void Test_3DArrays(AbstractTestDataFactory<IMatFile> testFactory)
+        public void Test_3DArrays(MatFileReadingMethod method)
         {
-            var matFile = testFactory["issue20.mat"];
+            var matFile = ReadTestFile("issue20", method);
             var obj = matFile["a3d"].Value;
             var values = obj.ConvertToDoubleArray();
             Assert.Equal(Enumerable.Range(1, 24).Select(x => (double)x).ToArray(), values);
@@ -566,9 +589,9 @@ namespace MatFileHandler.Tests
         /// Test four-dimensional arrays.
         /// </summary>
         [Theory, MemberData(nameof(TestDataFactories))]
-        public void Test_4DArrays(AbstractTestDataFactory<IMatFile> testFactory)
+        public void Test4DArrays(MatFileReadingMethod method)
         {
-            var matFile = testFactory["issue20.mat"];
+            var matFile = ReadTestFile("issue20", method);
             var obj = matFile["a4d"].Value;
             Assert.Equal(Enumerable.Range(1, 120).Select(x => (double)x).ToArray(), obj.ConvertToDoubleArray());
             Assert.Null(obj.ConvertTo2dDoubleArray());
@@ -577,16 +600,33 @@ namespace MatFileHandler.Tests
         /// <summary>
         /// Returns the factories that provide test data in various configurations.
         /// </summary>
-        public static TheoryData<AbstractTestDataFactory<IMatFile>> TestDataFactories
+        public static TheoryData<MatFileReadingMethod> TestDataFactories
         {
             get
             {
-                return new TheoryData<AbstractTestDataFactory<IMatFile>>
+                return new TheoryData<MatFileReadingMethod>
                 {
-                    new MatTestDataFactory(Path.Combine(TestDirectory, "good")),
-                    new PartialReadMatTestDataFactory(Path.Combine(TestDirectory, "good")),
-                    new UnalignedMatTestDataFactory(Path.Combine(TestDirectory, "good")),
+                    MatFileReadingMethod.NormalStream,
+                    MatFileReadingMethod.PartialStream,
+                    MatFileReadingMethod.UnalignedStream,
                 };
+            }
+        }
+
+        private static IMatFile ReadTestFile(string fileName, MatFileReadingMethod method)
+        {
+            var fullFileName = Path.Combine("test-data", "good", $"{fileName}.mat");
+            return MatFileReadingMethods.ReadMatFile(method, fullFileName);
+        }
+
+        private static IEnumerable<IMatFile> ReadAllTestFiles(MatFileReadingMethod method)
+        {
+            foreach (var fileName in Directory.EnumerateFiles(
+                         Path.Combine("test-data", "good"),
+                         "*.mat"))
+            {
+                var fullFileName = fileName;
+                yield return MatFileReadingMethods.ReadMatFile(method, fullFileName);
             }
         }
 

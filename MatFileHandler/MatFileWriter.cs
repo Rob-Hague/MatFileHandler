@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -47,30 +45,28 @@ namespace MatFileHandler
         public void Write(IMatFile file)
         {
             var header = Header.CreateNewHeader();
-            using (var writer = new BinaryWriter(Stream))
+            using var writer = new BinaryWriter(Stream);
+            WriteHeader(writer, header);
+            foreach (var variable in file.Variables)
             {
-                WriteHeader(writer, header);
-                foreach (var variable in file.Variables)
+                switch (_options.UseCompression)
                 {
-                    switch (_options.UseCompression)
-                    {
-                        case CompressionUsage.Always:
-                            if (Stream.CanSeek)
-                            {
-                                WriteCompressedVariableToSeekableStream(writer, variable);
-                            }
-                            else
-                            {
-                                WriteCompressedVariableToUnseekableStream(writer, variable);
-                            }
+                    case CompressionUsage.Always:
+                        if (Stream.CanSeek)
+                        {
+                            WriteCompressedVariableToSeekableStream(writer, variable);
+                        }
+                        else
+                        {
+                            WriteCompressedVariableToUnseekableStream(writer, variable);
+                        }
 
-                            break;
-                        case CompressionUsage.Never:
-                            WriteVariable(writer, variable);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                        break;
+                    case CompressionUsage.Never:
+                        WriteVariable(writer, variable);
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
             }
         }
@@ -98,7 +94,7 @@ namespace MatFileHandler
             return (s2 << 16) | s1;
         }
 
-        private void WriteHeader(BinaryWriter writer, Header header)
+        private static void WriteHeader(BinaryWriter writer, Header header)
         {
             writer.Write(Encoding.UTF8.GetBytes(header.Text));
             writer.Write(header.SubsystemDataOffset);
@@ -106,28 +102,19 @@ namespace MatFileHandler
             writer.Write((short)19785); // Magic number, 'IM'.
         }
 
-        private void WriteTag(BinaryWriter writer, Tag tag)
+        private static void WriteTag(BinaryWriter writer, Tag tag)
         {
             writer.Write((int)tag.Type);
             writer.Write(tag.Length);
         }
 
-        private void WriteShortTag(BinaryWriter writer, Tag tag)
+        private static void WriteShortTag(BinaryWriter writer, Tag tag)
         {
             writer.Write((short)tag.Type);
             writer.Write((short)tag.Length);
         }
 
-        private void WritePadding(BinaryWriter writer)
-        {
-            var positionMod8 = writer.BaseStream.Position % 8;
-            if (positionMod8 != 0)
-            {
-                writer.Write(new byte[8 - positionMod8]);
-            }
-        }
-
-        private void WriteDataElement(BinaryWriter writer, DataType type, byte[] data)
+        private static void WriteDataElement(BinaryWriter writer, DataType type, byte[] data)
         {
             if (data.Length > 4)
             {
@@ -152,14 +139,14 @@ namespace MatFileHandler
             }
         }
 
-        private void WriteDimensions(BinaryWriter writer, int[] dimensions)
+        private static void WriteDimensions(BinaryWriter writer, int[] dimensions)
         {
             var buffer = ConvertToByteArray(dimensions);
             WriteDataElement(writer, DataType.MiInt32, buffer);
         }
 
-        private byte[] ConvertToByteArray<T>(T[] data)
-          where T : struct
+        private static byte[] ConvertToByteArray<T>(T[] data)
+            where T : struct
         {
             int size;
             if (typeof(T) == typeof(sbyte))
@@ -202,6 +189,10 @@ namespace MatFileHandler
             {
                 size = sizeof(double);
             }
+            else if (typeof(T) == typeof(bool))
+            {
+                size = sizeof(bool);
+            }
             else
             {
                 throw new NotSupportedException();
@@ -211,51 +202,51 @@ namespace MatFileHandler
             return buffer;
         }
 
-        private (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays<T>(ComplexOf<T>[] data)
+        private static (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays<T>(ComplexOf<T>[] data)
           where T : struct
         {
             return (ConvertToByteArray(data.Select(x => x.Real).ToArray()),
                 ConvertToByteArray(data.Select(x => x.Imaginary).ToArray()));
         }
 
-        private (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays(Complex[] data)
+        private static (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays(Complex[] data)
         {
             return (ConvertToByteArray(data.Select(x => x.Real).ToArray()),
                 ConvertToByteArray(data.Select(x => x.Imaginary).ToArray()));
         }
 
-        private void WriteComplexValues(BinaryWriter writer, DataType type, (byte[] real, byte[] complex) data)
+        private static void WriteComplexValues(BinaryWriter writer, DataType type, (byte[] real, byte[] complex) data)
         {
             WriteDataElement(writer, type, data.real);
             WriteDataElement(writer, type, data.complex);
         }
 
-        private void WriteArrayFlags(BinaryWriter writer, ArrayFlags flags)
+        private static void WriteArrayFlags(BinaryWriter writer, ArrayFlags flags)
         {
             var flag = (byte)flags.Variable;
             WriteTag(writer, new Tag(DataType.MiUInt32, 8));
             writer.Write((byte)flags.Class);
             writer.Write(flag);
-            writer.Write(new byte[] { 0, 0, 0, 0, 0, 0 });
+            writer.Write([0, 0, 0, 0, 0, 0]);
         }
 
-        private void WriteSparseArrayFlags(BinaryWriter writer, SparseArrayFlags flags)
+        private static void WriteSparseArrayFlags(BinaryWriter writer, SparseArrayFlags flags)
         {
             var flag = (byte)flags.ArrayFlags.Variable;
             WriteTag(writer, new Tag(DataType.MiUInt32, 8));
             writer.Write((byte)flags.ArrayFlags.Class);
             writer.Write(flag);
-            writer.Write(new byte[] { 0, 0 });
+            writer.Write([0, 0]);
             writer.Write(flags.NzMax);
         }
 
-        private void WriteName(BinaryWriter writer, string name)
+        private static void WriteName(BinaryWriter writer, string name)
         {
             var nameBytes = Encoding.ASCII.GetBytes(name);
             WriteDataElement(writer, DataType.MiInt8, nameBytes);
         }
 
-        private void WriteNumericalArrayValues(BinaryWriter writer, IArray value)
+        private static void WriteNumericalArrayValues(BinaryWriter writer, IArray value)
         {
             switch (value)
             {
@@ -290,10 +281,7 @@ namespace MatFileHandler
                     WriteDataElement(writer, DataType.MiDouble, ConvertToByteArray(doubleArray.Data));
                     break;
                 case IArrayOf<bool> boolArray:
-                    WriteDataElement(
-                        writer,
-                        DataType.MiUInt8,
-                        boolArray.Data.Select(element => element ? (byte)1 : (byte)0).ToArray());
+                    WriteDataElement(writer, DataType.MiUInt8, ConvertToByteArray(boolArray.Data));
                     break;
                 case IArrayOf<ComplexOf<sbyte>> complexSbyteArray:
                     WriteComplexValues(writer, DataType.MiInt8, ConvertToPairOfByteArrays(complexSbyteArray.Data));
@@ -330,63 +318,39 @@ namespace MatFileHandler
             }
         }
 
-        private ArrayFlags GetArrayFlags(IArray array, bool isGlobal)
+        private static ArrayFlags GetArrayFlags(IArray array, bool isGlobal)
         {
             var variableFlags = isGlobal ? Variable.IsGlobal : 0;
-            switch (array)
+            return array switch
             {
-                case IArrayOf<sbyte> _:
-                    return new ArrayFlags(ArrayType.MxInt8, variableFlags);
-                case IArrayOf<byte> _:
-                    return new ArrayFlags(ArrayType.MxUInt8, variableFlags);
-                case IArrayOf<short> _:
-                    return new ArrayFlags(ArrayType.MxInt16, variableFlags);
-                case IArrayOf<ushort> _:
-                    return new ArrayFlags(ArrayType.MxUInt16, variableFlags);
-                case IArrayOf<int> _:
-                    return new ArrayFlags(ArrayType.MxInt32, variableFlags);
-                case IArrayOf<uint> _:
-                    return new ArrayFlags(ArrayType.MxUInt32, variableFlags);
-                case IArrayOf<long> _:
-                    return new ArrayFlags(ArrayType.MxInt64, variableFlags);
-                case IArrayOf<ulong> _:
-                    return new ArrayFlags(ArrayType.MxUInt64, variableFlags);
-                case IArrayOf<float> _:
-                    return new ArrayFlags(ArrayType.MxSingle, variableFlags);
-                case IArrayOf<double> _:
-                    return new ArrayFlags(ArrayType.MxDouble, variableFlags);
-                case IArrayOf<bool> _:
-                    return new ArrayFlags(ArrayType.MxUInt8, variableFlags | Variable.IsLogical);
-                case IArrayOf<ComplexOf<sbyte>> _:
-                    return new ArrayFlags(ArrayType.MxInt8, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<byte>> _:
-                    return new ArrayFlags(ArrayType.MxUInt8, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<short>> _:
-                    return new ArrayFlags(ArrayType.MxInt16, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<ushort>> _:
-                    return new ArrayFlags(ArrayType.MxUInt16, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<int>> _:
-                    return new ArrayFlags(ArrayType.MxInt32, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<uint>> _:
-                    return new ArrayFlags(ArrayType.MxUInt32, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<long>> _:
-                    return new ArrayFlags(ArrayType.MxInt64, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<ulong>> _:
-                    return new ArrayFlags(ArrayType.MxUInt64, variableFlags | Variable.IsComplex);
-                case IArrayOf<ComplexOf<float>> _:
-                    return new ArrayFlags(ArrayType.MxSingle, variableFlags | Variable.IsComplex);
-                case IArrayOf<Complex> _:
-                    return new ArrayFlags(ArrayType.MxDouble, variableFlags | Variable.IsComplex);
-                case IStructureArray _:
-                    return new ArrayFlags(ArrayType.MxStruct, variableFlags);
-                case ICellArray _:
-                    return new ArrayFlags(ArrayType.MxCell, variableFlags);
-                default:
-                    throw new NotSupportedException();
-            }
+                IArrayOf<sbyte> => new ArrayFlags(ArrayType.MxInt8, variableFlags),
+                IArrayOf<byte> => new ArrayFlags(ArrayType.MxUInt8, variableFlags),
+                IArrayOf<short> => new ArrayFlags(ArrayType.MxInt16, variableFlags),
+                IArrayOf<ushort> => new ArrayFlags(ArrayType.MxUInt16, variableFlags),
+                IArrayOf<int> => new ArrayFlags(ArrayType.MxInt32, variableFlags),
+                IArrayOf<uint> => new ArrayFlags(ArrayType.MxUInt32, variableFlags),
+                IArrayOf<long> => new ArrayFlags(ArrayType.MxInt64, variableFlags),
+                IArrayOf<ulong> => new ArrayFlags(ArrayType.MxUInt64, variableFlags),
+                IArrayOf<float> => new ArrayFlags(ArrayType.MxSingle, variableFlags),
+                IArrayOf<double> => new ArrayFlags(ArrayType.MxDouble, variableFlags),
+                IArrayOf<bool> => new ArrayFlags(ArrayType.MxUInt8, variableFlags | Variable.IsLogical),
+                IArrayOf<ComplexOf<sbyte>> => new ArrayFlags(ArrayType.MxInt8, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<byte>> => new ArrayFlags(ArrayType.MxUInt8, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<short>> => new ArrayFlags(ArrayType.MxInt16, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<ushort>> => new ArrayFlags(ArrayType.MxUInt16, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<int>> => new ArrayFlags(ArrayType.MxInt32, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<uint>> => new ArrayFlags(ArrayType.MxUInt32, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<long>> => new ArrayFlags(ArrayType.MxInt64, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<ulong>> => new ArrayFlags(ArrayType.MxUInt64, variableFlags | Variable.IsComplex),
+                IArrayOf<ComplexOf<float>> => new ArrayFlags(ArrayType.MxSingle, variableFlags | Variable.IsComplex),
+                IArrayOf<Complex> => new ArrayFlags(ArrayType.MxDouble, variableFlags | Variable.IsComplex),
+                IStructureArray => new ArrayFlags(ArrayType.MxStruct, variableFlags),
+                ICellArray => new ArrayFlags(ArrayType.MxCell, variableFlags),
+                _ => throw new NotSupportedException(),
+            };
         }
 
-        private SparseArrayFlags GetSparseArrayFlags<T>(ISparseArrayOf<T> array, bool isGlobal, uint nonZero)
+        private static SparseArrayFlags GetSparseArrayFlags<T>(ISparseArrayOf<T> array, bool isGlobal, uint nonZero)
             where T : struct
         {
             var flags = GetArrayFlags(array, isGlobal);
@@ -401,12 +365,12 @@ namespace MatFileHandler
             };
         }
 
-        private ArrayFlags GetCharArrayFlags(bool isGlobal)
+        private static ArrayFlags GetCharArrayFlags(bool isGlobal)
         {
             return new ArrayFlags(ArrayType.MxChar, isGlobal ? Variable.IsGlobal : 0);
         }
 
-        private void WriteWrappingContents<T>(
+        private static void WriteWrappingContents<T>(
             BinaryWriter writer,
             T array,
             Action<FakeWriter> lengthCalculator,
@@ -426,7 +390,7 @@ namespace MatFileHandler
             writeContents(writer);
         }
 
-        private void WriteNumericalArrayContents(BinaryWriter writer, IArray array, string name, bool isGlobal)
+        private static void WriteNumericalArrayContents(BinaryWriter writer, IArray array, string name, bool isGlobal)
         {
             WriteArrayFlags(writer, GetArrayFlags(array, isGlobal));
             WriteDimensions(writer, array.Dimensions);
@@ -434,7 +398,7 @@ namespace MatFileHandler
             WriteNumericalArrayValues(writer, array);
         }
 
-        private void WriteNumericalArray(
+        private static void WriteNumericalArray(
             BinaryWriter writer,
             IArray numericalArray,
             string name = "",
@@ -447,7 +411,7 @@ namespace MatFileHandler
                 contentsWriter => { WriteNumericalArrayContents(contentsWriter, numericalArray, name, isGlobal); });
         }
 
-        private void WriteCharArrayContents(BinaryWriter writer, ICharArray charArray, string name, bool isGlobal)
+        private static void WriteCharArrayContents(BinaryWriter writer, ICharArray charArray, string name, bool isGlobal)
         {
             WriteArrayFlags(writer, GetCharArrayFlags(isGlobal));
             WriteDimensions(writer, charArray.Dimensions);
@@ -456,7 +420,7 @@ namespace MatFileHandler
             WriteDataElement(writer, DataType.MiUtf16, ConvertToByteArray(array));
         }
 
-        private void WriteCharArray(BinaryWriter writer, ICharArray charArray, string name, bool isGlobal)
+        private static void WriteCharArray(BinaryWriter writer, ICharArray charArray, string name, bool isGlobal)
         {
             WriteWrappingContents(
                 writer,
@@ -465,7 +429,7 @@ namespace MatFileHandler
                 contentsWriter => { WriteCharArrayContents(contentsWriter, charArray, name, isGlobal); });
         }
 
-        private void WriteSparseArrayValues<T>(
+        private static void WriteSparseArrayValues<T>(
             BinaryWriter writer, int[] rows, int[] columns, T[] data)
           where T : struct
         {
@@ -475,9 +439,8 @@ namespace MatFileHandler
             {
                 WriteDataElement(writer, DataType.MiDouble, ConvertToByteArray(data));
             }
-            else if (data is Complex[])
+            else if (data is Complex[] complexData)
             {
-                var complexData = data as Complex[];
                 WriteDataElement(
                     writer,
                     DataType.MiDouble,
@@ -487,17 +450,16 @@ namespace MatFileHandler
                     DataType.MiDouble,
                     ConvertToByteArray(complexData.Select(c => c.Imaginary).ToArray()));
             }
-            else if (data is bool[])
+            else if (data is bool[] boolData)
             {
-                var boolData = data as bool[];
                 WriteDataElement(
                     writer,
                     DataType.MiUInt8,
-                    boolData.Select(element => element ? (byte)1 : (byte)0).ToArray());
+                    ConvertToByteArray(boolData));
             }
         }
 
-        private (int[] rowIndex, int[] columnIndex, T[] data, uint nonZero) PrepareSparseArrayData<T>(
+        private static (int[] rowIndex, int[] columnIndex, T[] data, uint nonZero) PrepareSparseArrayData<T>(
             ISparseArrayOf<T> array)
             where T : struct, IEquatable<T>
         {
@@ -520,7 +482,7 @@ namespace MatFileHandler
             return (rowIndexList.ToArray(), columnIndex, valuesList.ToArray(), (uint)rowIndexList.Count);
         }
 
-        private void WriteSparseArrayContents<T>(
+        private static void WriteSparseArrayContents<T>(
             BinaryWriter writer,
             ISparseArrayOf<T> array,
             string name,
@@ -534,7 +496,7 @@ namespace MatFileHandler
             WriteSparseArrayValues(writer, rows, columns, data);
         }
 
-        private void WriteSparseArray<T>(BinaryWriter writer, ISparseArrayOf<T> sparseArray, string name, bool isGlobal)
+        private static void WriteSparseArray<T>(BinaryWriter writer, ISparseArrayOf<T> sparseArray, string name, bool isGlobal)
             where T : unmanaged, IEquatable<T>
         {
             WriteWrappingContents(
@@ -544,11 +506,11 @@ namespace MatFileHandler
                 contentsWriter => { WriteSparseArrayContents(contentsWriter, sparseArray, name, isGlobal); });
         }
 
-        private void WriteFieldNames(BinaryWriter writer, IEnumerable<string> fieldNames)
+        private static void WriteFieldNames(BinaryWriter writer, IEnumerable<string> fieldNames)
         {
             var fieldNamesArray = fieldNames.Select(name => Encoding.ASCII.GetBytes(name)).ToArray();
-            var maxFieldName = fieldNamesArray.Select(name => name.Length).Max() + 1;
-            WriteDataElement(writer, DataType.MiInt32, ConvertToByteArray(new[] { maxFieldName }));
+            var maxFieldName = fieldNamesArray.Max(name => name.Length) + 1;
+            WriteDataElement(writer, DataType.MiInt32, ConvertToByteArray([maxFieldName]));
             var buffer = new byte[fieldNamesArray.Length * maxFieldName];
             var startPosition = 0;
             foreach (var name in fieldNamesArray)
@@ -681,31 +643,27 @@ namespace MatFileHandler
 
         private void WriteCompressedVariableToUnseekableStream(BinaryWriter writer, IVariable variable)
         {
-            using (var compressedStream = new MemoryStream())
+            using var compressedStream = new MemoryStream();
+            uint crc;
+            using (var originalStream = new MemoryStream())
             {
-                uint crc;
-                using (var originalStream = new MemoryStream())
-                {
-                    using (var internalWriter = new BinaryWriter(originalStream))
-                    {
-                        WriteVariable(internalWriter, variable);
-                        originalStream.Position = 0;
-                        crc = CalculateAdler32Checksum(originalStream);
-                        originalStream.Position = 0;
-                        using (var compressionStream =
-                            new DeflateStream(compressedStream, CompressionMode.Compress, leaveOpen: true))
-                        {
-                            originalStream.CopyTo(compressionStream);
-                        }
-                    }
-                }
-                compressedStream.Position = 0;
-                WriteTag(writer, new Tag(DataType.MiCompressed, (int)(compressedStream.Length + 6)));
-                writer.Write((byte)0x78);
-                writer.Write((byte)0x9c);
-                compressedStream.CopyTo(writer.BaseStream);
-                writer.Write(BitConverter.GetBytes(crc).Reverse().ToArray());
+                using var internalWriter = new BinaryWriter(originalStream);
+                WriteVariable(internalWriter, variable);
+                originalStream.Position = 0;
+                crc = CalculateAdler32Checksum(originalStream);
+                originalStream.Position = 0;
+                using var compressionStream = new DeflateStream(
+                    compressedStream,
+                    CompressionMode.Compress,
+                    leaveOpen: true);
+                originalStream.CopyTo(compressionStream);
             }
+            compressedStream.Position = 0;
+            WriteTag(writer, new Tag(DataType.MiCompressed, (int)(compressedStream.Length + 6)));
+            writer.Write((byte)0x78);
+            writer.Write((byte)0x9c);
+            compressedStream.CopyTo(writer.BaseStream);
+            writer.Write(BitConverter.GetBytes(crc).Reverse().ToArray());
         }
     }
 }

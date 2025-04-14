@@ -1,5 +1,3 @@
-﻿// Copyright 2017-2018 Alexander Luzgarev
-
 using System;
 using System.IO;
 
@@ -13,8 +11,8 @@ namespace MatFileHandler
     {
         private const uint BigPrime = 0xFFF1;
         private readonly Stream _stream;
-        private uint s1 = 1;
-        private uint s2 = 0;
+        private uint s1;
+        private uint s2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChecksumCalculatingStream"/> class.
@@ -23,6 +21,8 @@ namespace MatFileHandler
         public ChecksumCalculatingStream(Stream stream)
         {
             _stream = stream;
+            s1 = 1;
+            s2 = 0;
         }
 
         /// <inheritdoc />
