@@ -1,9 +1,12 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MatFileHandler
@@ -114,13 +117,21 @@ namespace MatFileHandler
             writer.Write((short)tag.Length);
         }
 
-        private static void WriteDataElement(BinaryWriter writer, DataType type, byte[] data)
+        private static void WriteDataElement<T>(BinaryWriter writer, DataType type, T[] data)
+            where T : unmanaged
         {
-            if (data.Length > 4)
+            unsafe
             {
-                WriteTag(writer, new Tag(type, data.Length));
-                writer.Write(data);
-                var rem = data.Length % 8;
+                Debug.Assert(type.Size() == sizeof(T));
+            }
+
+            ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes<T>(data);
+
+            if (bytes.Length > 4)
+            {
+                WriteTag(writer, new Tag(type, bytes.Length));
+                writer.Write(bytes);
+                var rem = bytes.Length % 8;
                 if (rem > 0)
                 {
                     var padding = new byte[8 - rem];
@@ -129,11 +140,11 @@ namespace MatFileHandler
             }
             else
             {
-                WriteShortTag(writer, new Tag(type, data.Length));
-                writer.Write(data);
-                if (data.Length < 4)
+                WriteShortTag(writer, new Tag(type, bytes.Length));
+                writer.Write(bytes);
+                if (bytes.Length < 4)
                 {
-                    var padding = new byte[4 - data.Length];
+                    var padding = new byte[4 - bytes.Length];
                     writer.Write(padding);
                 }
             }
@@ -141,81 +152,22 @@ namespace MatFileHandler
 
         private static void WriteDimensions(BinaryWriter writer, int[] dimensions)
         {
-            var buffer = ConvertToByteArray(dimensions);
-            WriteDataElement(writer, DataType.MiInt32, buffer);
+            WriteDataElement(writer, DataType.MiInt32, dimensions);
         }
 
-        private static byte[] ConvertToByteArray<T>(T[] data)
+        private static (T[] real, T[] imaginary) ConvertToPairOfArrays<T>(ComplexOf<T>[] data)
             where T : struct
         {
-            int size;
-            if (typeof(T) == typeof(sbyte))
-            {
-                size = sizeof(sbyte);
-            }
-            else if (typeof(T) == typeof(byte))
-            {
-                size = sizeof(byte);
-            }
-            else if (typeof(T) == typeof(short))
-            {
-                size = sizeof(short);
-            }
-            else if (typeof(T) == typeof(ushort))
-            {
-                size = sizeof(ushort);
-            }
-            else if (typeof(T) == typeof(int))
-            {
-                size = sizeof(int);
-            }
-            else if (typeof(T) == typeof(uint))
-            {
-                size = sizeof(uint);
-            }
-            else if (typeof(T) == typeof(long))
-            {
-                size = sizeof(long);
-            }
-            else if (typeof(T) == typeof(ulong))
-            {
-                size = sizeof(ulong);
-            }
-            else if (typeof(T) == typeof(float))
-            {
-                size = sizeof(float);
-            }
-            else if (typeof(T) == typeof(double))
-            {
-                size = sizeof(double);
-            }
-            else if (typeof(T) == typeof(bool))
-            {
-                size = sizeof(bool);
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
-            var buffer = new byte[data.Length * size];
-            Buffer.BlockCopy(data, 0, buffer, 0, buffer.Length);
-            return buffer;
+            return (data.Select(x => x.Real).ToArray(), data.Select(x => x.Imaginary).ToArray());
         }
 
-        private static (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays<T>(ComplexOf<T>[] data)
-          where T : struct
+        private static (double[] real, double[] imaginary) ConvertToPairOfArrays(Complex[] data)
         {
-            return (ConvertToByteArray(data.Select(x => x.Real).ToArray()),
-                ConvertToByteArray(data.Select(x => x.Imaginary).ToArray()));
+            return (data.Select(x => x.Real).ToArray(), data.Select(x => x.Imaginary).ToArray());
         }
 
-        private static (byte[] real, byte[] imaginary) ConvertToPairOfByteArrays(Complex[] data)
-        {
-            return (ConvertToByteArray(data.Select(x => x.Real).ToArray()),
-                ConvertToByteArray(data.Select(x => x.Imaginary).ToArray()));
-        }
-
-        private static void WriteComplexValues(BinaryWriter writer, DataType type, (byte[] real, byte[] complex) data)
+        private static void WriteComplexValues<T>(BinaryWriter writer, DataType type, (T[] real, T[] complex) data)
+            where T : unmanaged
         {
             WriteDataElement(writer, type, data.real);
             WriteDataElement(writer, type, data.complex);
@@ -251,67 +203,67 @@ namespace MatFileHandler
             switch (value)
             {
                 case IArrayOf<sbyte> sbyteArray:
-                    WriteDataElement(writer, DataType.MiInt8, ConvertToByteArray(sbyteArray.Data));
+                    WriteDataElement(writer, DataType.MiInt8, sbyteArray.Data);
                     break;
                 case IArrayOf<byte> byteArray:
-                    WriteDataElement(writer, DataType.MiUInt8, ConvertToByteArray(byteArray.Data));
+                    WriteDataElement(writer, DataType.MiUInt8, byteArray.Data);
                     break;
                 case IArrayOf<short> shortArray:
-                    WriteDataElement(writer, DataType.MiInt16, ConvertToByteArray(shortArray.Data));
+                    WriteDataElement(writer, DataType.MiInt16, shortArray.Data);
                     break;
                 case IArrayOf<ushort> ushortArray:
-                    WriteDataElement(writer, DataType.MiUInt16, ConvertToByteArray(ushortArray.Data));
+                    WriteDataElement(writer, DataType.MiUInt16, ushortArray.Data);
                     break;
                 case IArrayOf<int> intArray:
-                    WriteDataElement(writer, DataType.MiInt32, ConvertToByteArray(intArray.Data));
+                    WriteDataElement(writer, DataType.MiInt32, intArray.Data);
                     break;
                 case IArrayOf<uint> uintArray:
-                    WriteDataElement(writer, DataType.MiUInt32, ConvertToByteArray(uintArray.Data));
+                    WriteDataElement(writer, DataType.MiUInt32, uintArray.Data);
                     break;
                 case IArrayOf<long> longArray:
-                    WriteDataElement(writer, DataType.MiInt64, ConvertToByteArray(longArray.Data));
+                    WriteDataElement(writer, DataType.MiInt64, longArray.Data);
                     break;
                 case IArrayOf<ulong> ulongArray:
-                    WriteDataElement(writer, DataType.MiUInt64, ConvertToByteArray(ulongArray.Data));
+                    WriteDataElement(writer, DataType.MiUInt64, ulongArray.Data);
                     break;
                 case IArrayOf<float> floatArray:
-                    WriteDataElement(writer, DataType.MiSingle, ConvertToByteArray(floatArray.Data));
+                    WriteDataElement(writer, DataType.MiSingle, floatArray.Data);
                     break;
                 case IArrayOf<double> doubleArray:
-                    WriteDataElement(writer, DataType.MiDouble, ConvertToByteArray(doubleArray.Data));
+                    WriteDataElement(writer, DataType.MiDouble, doubleArray.Data);
                     break;
                 case IArrayOf<bool> boolArray:
-                    WriteDataElement(writer, DataType.MiUInt8, ConvertToByteArray(boolArray.Data));
+                    WriteDataElement(writer, DataType.MiUInt8, boolArray.Data);
                     break;
                 case IArrayOf<ComplexOf<sbyte>> complexSbyteArray:
-                    WriteComplexValues(writer, DataType.MiInt8, ConvertToPairOfByteArrays(complexSbyteArray.Data));
+                    WriteComplexValues(writer, DataType.MiInt8, ConvertToPairOfArrays(complexSbyteArray.Data));
                     break;
                 case IArrayOf<ComplexOf<byte>> complexByteArray:
-                    WriteComplexValues(writer, DataType.MiUInt8, ConvertToPairOfByteArrays(complexByteArray.Data));
+                    WriteComplexValues(writer, DataType.MiUInt8, ConvertToPairOfArrays(complexByteArray.Data));
                     break;
                 case IArrayOf<ComplexOf<short>> complexShortArray:
-                    WriteComplexValues(writer, DataType.MiInt16, ConvertToPairOfByteArrays(complexShortArray.Data));
+                    WriteComplexValues(writer, DataType.MiInt16, ConvertToPairOfArrays(complexShortArray.Data));
                     break;
                 case IArrayOf<ComplexOf<ushort>> complexUshortArray:
-                    WriteComplexValues(writer, DataType.MiUInt16, ConvertToPairOfByteArrays(complexUshortArray.Data));
+                    WriteComplexValues(writer, DataType.MiUInt16, ConvertToPairOfArrays(complexUshortArray.Data));
                     break;
                 case IArrayOf<ComplexOf<int>> complexIntArray:
-                    WriteComplexValues(writer, DataType.MiInt32, ConvertToPairOfByteArrays(complexIntArray.Data));
+                    WriteComplexValues(writer, DataType.MiInt32, ConvertToPairOfArrays(complexIntArray.Data));
                     break;
                 case IArrayOf<ComplexOf<uint>> complexUintArray:
-                    WriteComplexValues(writer, DataType.MiUInt32, ConvertToPairOfByteArrays(complexUintArray.Data));
+                    WriteComplexValues(writer, DataType.MiUInt32, ConvertToPairOfArrays(complexUintArray.Data));
                     break;
                 case IArrayOf<ComplexOf<long>> complexLongArray:
-                    WriteComplexValues(writer, DataType.MiInt64, ConvertToPairOfByteArrays(complexLongArray.Data));
+                    WriteComplexValues(writer, DataType.MiInt64, ConvertToPairOfArrays(complexLongArray.Data));
                     break;
                 case IArrayOf<ComplexOf<ulong>> complexUlongArray:
-                    WriteComplexValues(writer, DataType.MiUInt64, ConvertToPairOfByteArrays(complexUlongArray.Data));
+                    WriteComplexValues(writer, DataType.MiUInt64, ConvertToPairOfArrays(complexUlongArray.Data));
                     break;
                 case IArrayOf<ComplexOf<float>> complexFloatArray:
-                    WriteComplexValues(writer, DataType.MiSingle, ConvertToPairOfByteArrays(complexFloatArray.Data));
+                    WriteComplexValues(writer, DataType.MiSingle, ConvertToPairOfArrays(complexFloatArray.Data));
                     break;
                 case IArrayOf<Complex> complexDoubleArray:
-                    WriteComplexValues(writer, DataType.MiDouble, ConvertToPairOfByteArrays(complexDoubleArray.Data));
+                    WriteComplexValues(writer, DataType.MiDouble, ConvertToPairOfArrays(complexDoubleArray.Data));
                     break;
                 default:
                     throw new NotSupportedException();
@@ -416,8 +368,7 @@ namespace MatFileHandler
             WriteArrayFlags(writer, GetCharArrayFlags(isGlobal));
             WriteDimensions(writer, charArray.Dimensions);
             WriteName(writer, name);
-            var array = charArray.String.ToCharArray().Select(c => (ushort)c).ToArray();
-            WriteDataElement(writer, DataType.MiUtf16, ConvertToByteArray(array));
+            WriteDataElement(writer, DataType.MiUtf16, charArray.String.ToCharArray());
         }
 
         private static void WriteCharArray(BinaryWriter writer, ICharArray charArray, string name, bool isGlobal)
@@ -431,31 +382,31 @@ namespace MatFileHandler
 
         private static void WriteSparseArrayValues<T>(
             BinaryWriter writer, int[] rows, int[] columns, T[] data)
-          where T : struct
+          where T : unmanaged
         {
-            WriteDataElement(writer, DataType.MiInt32, ConvertToByteArray(rows));
-            WriteDataElement(writer, DataType.MiInt32, ConvertToByteArray(columns));
+            WriteDataElement(writer, DataType.MiInt32, rows);
+            WriteDataElement(writer, DataType.MiInt32, columns);
             if (data is double[])
             {
-                WriteDataElement(writer, DataType.MiDouble, ConvertToByteArray(data));
+                WriteDataElement(writer, DataType.MiDouble, data);
             }
             else if (data is Complex[] complexData)
             {
                 WriteDataElement(
                     writer,
                     DataType.MiDouble,
-                    ConvertToByteArray(complexData.Select(c => c.Real).ToArray()));
+                    complexData.Select(c => c.Real).ToArray());
                 WriteDataElement(
                     writer,
                     DataType.MiDouble,
-                    ConvertToByteArray(complexData.Select(c => c.Imaginary).ToArray()));
+                    complexData.Select(c => c.Imaginary).ToArray());
             }
             else if (data is bool[] boolData)
             {
                 WriteDataElement(
                     writer,
                     DataType.MiUInt8,
-                    ConvertToByteArray(boolData));
+                    boolData);
             }
         }
 
@@ -487,7 +438,7 @@ namespace MatFileHandler
             ISparseArrayOf<T> array,
             string name,
             bool isGlobal)
-            where T : struct, IEquatable<T>
+            where T : unmanaged, IEquatable<T>
         {
             (var rows, var columns, var data, var nonZero) = PrepareSparseArrayData(array);
             WriteSparseArrayFlags(writer, GetSparseArrayFlags(array, isGlobal, nonZero));
@@ -510,7 +461,7 @@ namespace MatFileHandler
         {
             var fieldNamesArray = fieldNames.Select(name => Encoding.ASCII.GetBytes(name)).ToArray();
             var maxFieldName = fieldNamesArray.Max(name => name.Length) + 1;
-            WriteDataElement(writer, DataType.MiInt32, ConvertToByteArray([maxFieldName]));
+            WriteDataElement(writer, DataType.MiInt32, [maxFieldName]);
             var buffer = new byte[fieldNamesArray.Length * maxFieldName];
             var startPosition = 0;
             foreach (var name in fieldNamesArray)

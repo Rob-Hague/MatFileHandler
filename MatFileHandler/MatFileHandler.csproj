@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461;net472</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net462;net8.0</TargetFrameworks>
     <PackageVersion>1.4.0-beta6</PackageVersion>
     <PackageId>MatFileHandler</PackageId>
     <Title>A library for reading and writing MATLAB .mat files.</Title>
@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" Condition="'$(TargetFramework)' == 'net461'" />
+    <PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.7" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
 
   <ItemGroup>

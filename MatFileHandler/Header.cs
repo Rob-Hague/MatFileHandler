@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-#if !NET461
+#if !NET462
 using System.Runtime.InteropServices;
 #endif
 
@@ -79,7 +79,7 @@ namespace MatFileHandler
 
         private static string GetOperatingSystem()
         {
-#if NET461
+#if NET462
             return "Windows";
 #else
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

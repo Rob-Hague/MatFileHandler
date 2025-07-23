@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MatFileHandler
@@ -144,17 +146,18 @@ namespace MatFileHandler
             return Encoding.ASCII.GetString(element.Data.Select(x => (byte)x).ToArray());
         }
 
-        private static DataElement ReadNum<T>(Tag tag, BinaryReader reader)
-            where T : struct
+        private static MiNum<T> ReadNum<T>(Tag tag, BinaryReader reader)
+            where T : unmanaged
         {
-            var bytes = reader.ReadBytes(tag.Length);
-            if (tag.Type == DataType.MiUInt8)
+            T[] result;
+
+            unsafe
             {
-                return new MiNum<byte>(bytes);
+                Debug.Assert(tag.ElementSize == sizeof(T));
+                result = new T[tag.Length / sizeof(T)];
             }
 
-            var result = new T[bytes.Length / tag.ElementSize];
-            Buffer.BlockCopy(bytes, 0, result, 0, bytes.Length);
+            reader.BaseStream.ReadExactly(MemoryMarshal.AsBytes<T>(result));
             return new MiNum<T>(result);
         }
 
