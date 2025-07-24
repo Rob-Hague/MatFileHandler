@@ -345,13 +345,11 @@ namespace MatFileHandler
 
         private DataElement ReadCompressed(Tag tag, BinaryReader reader)
         {
-            reader.ReadBytes(2);
-
             DataElement element;
 
-            using (var substream = new Substream(reader.BaseStream, tag.Length - 6))
+            using (var substream = new Substream(reader.BaseStream, tag.Length))
             {
-                using (var deflateStream = new DeflateStream(substream, CompressionMode.Decompress))
+                using (var deflateStream = new ZLibStream(substream, CompressionMode.Decompress, leaveOpen: true))
                 using (var bufferedStream = new BufferedStream(deflateStream))
                 using (var positionTrackingStream = new PositionTrackingStream(bufferedStream))
                 using (var innerReader = new BinaryReader(positionTrackingStream))
@@ -366,8 +364,6 @@ namespace MatFileHandler
                     reader.ReadBytes((int)(substream.Length - substream.Position));
                 }
             }
-
-            reader.ReadBytes(4);
 
             return element;
         }

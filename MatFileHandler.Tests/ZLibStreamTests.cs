@@ -1,16 +1,17 @@
 using System;
-using System.Collections.Generic;
+using System.Buffers.Binary;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.IO.Compression;
 using Xunit;
 
 namespace MatFileHandler.Tests
 {
     /// <summary>
-    /// Tests for the <see cref="ChecksumCalculatingStream"/> class.
+    /// Tests for the <see cref="ZLibStream"/> class.
+    /// This is only useful while a .NET Framework target exists,
+    /// otherwise it is just testing the .NET API.
     /// </summary>
-    public class ChecksumCalculatingStreamTests
+    public class ZLibStreamTests
     {
         /// <summary>
         /// Test writing various things.
@@ -20,12 +21,33 @@ namespace MatFileHandler.Tests
         [MemberData(nameof(TestData))]
         public void Test(byte[] bytes)
         {
-            using var stream = new MemoryStream();
-            var sut = new ChecksumCalculatingStream(stream);
-            sut.Write(bytes, 0, bytes.Length);
-            var actual = sut.GetCrc();
+            var expectedCrc = ReferenceCalculation(bytes);
 
-            var expected = ReferenceCalculation(bytes);
+            using var stream = new MemoryStream();
+            using (var sut = new ZLibStream(stream, CompressionMode.Compress, leaveOpen: true))
+            {
+                sut.Write(bytes, 0, bytes.Length);
+            }
+
+            var actualBytes = stream.ToArray();
+
+            Assert.True(actualBytes.Length > 6);
+
+            Assert.Equal(0x78, actualBytes[0]);
+            Assert.Equal(0x9C, actualBytes[1]);
+
+            var actualCrc = BinaryPrimitives.ReadUInt32BigEndian(actualBytes.AsSpan(actualBytes.Length - 4));
+
+            Assert.Equal(expectedCrc, actualCrc);
+
+            // Test round-trip
+            stream.SetLength(0);
+            using (var sut = new ZLibStream(new MemoryStream(actualBytes), CompressionMode.Decompress, leaveOpen: true))
+            {
+                sut.CopyTo(stream);
+            }
+
+            Assert.Equal(bytes, stream.ToArray());
         }
 
         /// <summary>
@@ -56,15 +78,6 @@ namespace MatFileHandler.Tests
                 new byte[] { 0x02, 0x03, 0x05, 0x07, 0x0b, 0x0d, 0x11, 0x13, 0x17, 0x1d },
                 empty,
                 nonEmpty,
-            };
-        }
-
-        private static Action<Stream> BinaryWriterAction(Action<BinaryWriter> action)
-        {
-            return stream =>
-            {
-                using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
-                action(writer);
             };
         }
 

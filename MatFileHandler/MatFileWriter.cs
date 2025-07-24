@@ -570,23 +570,18 @@ namespace MatFileHandler
         {
             var position = writer.BaseStream.Position;
             WriteTag(writer, new Tag(DataType.MiCompressed, 0));
-            writer.Write((byte)0x78);
-            writer.Write((byte)0x9c);
+
             int compressedLength;
-            uint crc;
             var before = writer.BaseStream.Position;
-            using (var compressionStream = new DeflateStream(writer.BaseStream, CompressionMode.Compress, leaveOpen: true))
+            using (var compressionStream = new ZLibStream(writer.BaseStream, CompressionMode.Compress, leaveOpen: true))
+            using (var internalWriter = new BinaryWriter(compressionStream, Encoding.UTF8, leaveOpen: true))
             {
-                using var checksumStream = new ChecksumCalculatingStream(compressionStream);
-                using var internalWriter = new BinaryWriter(checksumStream, Encoding.UTF8, leaveOpen: true);
                 WriteVariable(internalWriter, variable);
-                crc = checksumStream.GetCrc();
             }
 
             var after = writer.BaseStream.Position;
-            compressedLength = (int)(after - before) + 6;
+            compressedLength = (int)(after - before);
 
-            writer.Write(BitConverter.GetBytes(crc).Reverse().ToArray());
             writer.BaseStream.Position = position;
             WriteTag(writer, new Tag(DataType.MiCompressed, compressedLength));
             writer.BaseStream.Seek(0, SeekOrigin.End);
